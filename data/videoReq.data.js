@@ -33,5 +33,51 @@ const getAllVideoRequests = async (req, res) => {
   }
 };
 
+const getVideoRequestById = async (req, res) => {
+  const video_Id = req.params.id;
+  try {
+    const video = await VideoReq.find({ _id: video_Id });
+    if (!video) {
+      return res.status(404).json("request not found");
+    }
+    res.status(200).json(video);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
-export { createRequest, getAllVideoRequests };
+const updateVideoRequest = async (req, res) => {
+  const allowedFields = ["topic_title", "topic_details", "expected_result", "target_level"];
+  let updateData = {};
+  allowedFields.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      updateData[field] = req.body[field];
+    }
+  });
+  try {
+    // find & update request in database
+    const updatedRequest = await VideoReq.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
+    if (!updatedRequest) {
+      return res.status(404).json("request not found");
+    }
+    res.status(200).json({ message: "video-request updated", updatedRequest });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const deleteVideoRequest = async (req, res) => {
+  try {
+    const deletedRequest = await VideoReq.findByIdAndDelete(req.params.id);
+    if (!deletedRequest) {
+      return res.status(404).json("request not found");
+    }
+    res.status(200).json({ message: "request deleted", deletedRequest });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+export { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest };

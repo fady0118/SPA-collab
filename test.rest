@@ -13,3 +13,16 @@ Content-Type: application/json
     "topic_details":"single page app in vanilla js"
 
 }
+
+### get video request by id
+GET http://localhost:4000/video-request/id
+
+### update video request by id
+PATCH  http://localhost:4000/video-request/id
+Content-Type: application/json
+
+{
+    "topic_details":"movie watchparty"
+}
+### delete video request by id
+DELETE  http://localhost:4000/video-request/id
