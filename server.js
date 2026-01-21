@@ -2,9 +2,11 @@ import express from "express";
 import cors from "cors";
 import { connectDB } from "./models/mongo.config.js";
 import { createRequest, getVideoReq, getVideoRequestById, updateVideoRequest, deleteVideoRequest } from "./data/videoReq.data.js";
+import multer from "multer";
 
 const PORT = process.env.PORT || 7334;
 const app = express();
+const upload = multer();
 
 app.use(cors()); // allow CORS
 app.use(express.static("public")); // serve static files in public
@@ -20,7 +22,7 @@ app.get("/", (req, res) => {
 
 app.get("/video-request", getVideoReq);
 app.get("/video-request/:id", getVideoRequestById);
-app.post("/video-request", createRequest);
+app.post("/video-request", upload.none(),createRequest);
 app.patch("/video-request/:id", updateVideoRequest);
 app.delete("/video-request/:id", deleteVideoRequest);
 
