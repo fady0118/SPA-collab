@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import { connectDB } from "./models/mongo.config.js";
+import { createRequest, getAllVideoRequests } from "./data/videoReq.data.js";
 
 const PORT = process.env.PORT || 7334;
 const app = express();
@@ -16,7 +18,12 @@ app.get("/", (req, res) => {
   res.send("hello");
 });
 
+app.get("/video-request", getAllVideoRequests);
+app.post("/video-request", createRequest);
+
+
 const startServer = async () => {
+  connectDB();
   try {
     app.listen(PORT, () => {
       console.log(`server started on port ${PORT}`);
