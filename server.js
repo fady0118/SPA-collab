@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./models/mongo.config.js";
-import { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest } from "./data/videoReq.data.js";
+import { createRequest, getVideoReq, getVideoRequestById, updateVideoRequest, deleteVideoRequest } from "./data/videoReq.data.js";
 
 const PORT = process.env.PORT || 7334;
 const app = express();
@@ -18,7 +18,7 @@ app.get("/", (req, res) => {
   res.send("hello");
 });
 
-app.get("/video-request", getAllVideoRequests);
+app.get("/video-request", getVideoReq);
 app.get("/video-request/:id", getVideoRequestById);
 app.post("/video-request", createRequest);
 app.patch("/video-request/:id", updateVideoRequest);

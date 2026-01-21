@@ -33,6 +33,29 @@ const getAllVideoRequests = async (req, res) => {
   }
 };
 
+const searchRequests = async (req, res) => {
+  // rn we only search for topic but we can search for author name or email, target_level or status
+  const { topic_title } = req.query;
+  try {
+    const topics = await VideoReq.find({ topic_title }).sort({ createdAt: -1 });
+    if (!topics) {
+      return res.status(404).json("no request found");
+    }
+    res.status(200).json({ topics });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getVideoReq = async (req, res) => {
+  const searchTerm = req.query;
+  if(Object.entries(searchTerm).length){
+    return searchRequests(req, res)
+  } else{
+    return getAllVideoRequests(req, res)
+  }
+}
+
 const getVideoRequestById = async (req, res) => {
   const video_Id = req.params.id;
   try {
@@ -80,4 +103,4 @@ const deleteVideoRequest = async (req, res) => {
 
 
 
-export { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest };
+export { createRequest, getVideoReq, getVideoRequestById, updateVideoRequest, deleteVideoRequest };
