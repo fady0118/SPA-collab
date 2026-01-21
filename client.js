@@ -36,6 +36,22 @@ document.addEventListener("DOMContentLoaded", async function () {
     return vidRequests;
   }
 
+async function updateVote(vote_type, request_id, e) {
+    try {
+        const response = await fetch(`http://localhost:4000/video-request/vote/${request_id}`, {
+            headers:{ "Content-Type": "application/json" },
+            method:"PATCH",
+            body:JSON.stringify({vote_type: vote_type})
+        })
+        const data = await response.json();
+        const voteScoreEl = e.target.parentElement.querySelector(".voteScore");
+        const voteScore = data.newRequest.votes["ups"] - data.newRequest.votes["downs"];
+        voteScoreEl.textContent = voteScore;
+    } catch (error) {
+        console.log(error)
+    }
+}
+
   function getSingleVidReq(request) {
     let date = new Date(request.createdAt);
     const dateFormat = `${date.toLocaleDateString("en-US", { weekday: "short" })} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
@@ -72,6 +88,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const requestEl = document.createElement("div");
     requestEl.innerHTML = vidRequestTemplate;
+    requestEl.querySelector(".upvote-btn").addEventListener("click", (e)=>{
+        updateVote("ups", request._id, e)
+    })
+    requestEl.querySelector(".downvote-btn").addEventListener("click", (e)=>{
+        updateVote("downs", request._id, e)
+    })
+
     return requestEl
   }
 });

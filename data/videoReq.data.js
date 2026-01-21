@@ -101,6 +101,25 @@ const deleteVideoRequest = async (req, res) => {
   }
 };
 
+const updateVoteForRequest = async (req, res) => {
+  const { vote_type } = req.body;
+  const other_type = vote_type === "ups" ? "downs" : "ups";
+  try {
+    const oldRequest = await VideoReq.findById(req.params.id);
+    if (!oldRequest) {
+      return res.status(404).json("request not found");
+    }
+    const newRequest = await VideoReq.findByIdAndUpdate(req.params.id, 
+      { votes: { 
+        [vote_type]: ++oldRequest.votes[vote_type], 
+        [other_type]: oldRequest.votes[other_type] 
+      } }, 
+        { new: true });
+    res.status(200).json({ message: "votes updated", newRequest });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 
-export { createRequest, getVideoReq, getVideoRequestById, updateVideoRequest, deleteVideoRequest };
+export { createRequest, getVideoReq, getVideoRequestById, updateVideoRequest, deleteVideoRequest, updateVoteForRequest };

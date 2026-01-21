@@ -28,3 +28,11 @@ Content-Type: application/json
 }
 ### delete video request by id
 DELETE  http://localhost:4000/video-request/id
+
+### update video request vote by id
+PATCH   http://localhost:4000/video-request/id
+Content-Type: application/json
+
+{
+    "vote_type":"ups"
+}
