@@ -47,6 +47,9 @@ async function updateVote(vote_type, request_id, e) {
         const voteScoreEl = e.target.parentElement.querySelector(".voteScore");
         const voteScore = data.newRequest.votes["ups"] - data.newRequest.votes["downs"];
         voteScoreEl.textContent = voteScore;
+        const index = requestsList.findIndex(reqItem=>reqItem._id===data.newRequest._id);
+        requestsList[index].votes = data.newRequest.votes;
+        console.log(requestsList[index])
     } catch (error) {
         console.log(error)
     }
@@ -94,7 +97,15 @@ async function updateVote(vote_type, request_id, e) {
     requestEl.querySelector(".downvote-btn").addEventListener("click", (e)=>{
         updateVote("downs", request._id, e)
     })
-
     return requestEl
   }
+  // SORTING
+  document.getElementById("newFirstSort").addEventListener("click", ()=>{
+    const sortedList = [...requestsList].sort((a,b)=>a.createdAt - b.createdAt)
+    renderList(sortedList);
+  })
+  document.getElementById("topVotedFirstSort").addEventListener("click", ()=>{
+    const sortedList = [...requestsList].sort((a,b)=>(b.votes["ups"]-b.votes["downs"]) - (a.votes["ups"]-a.votes["downs"]))
+    renderList(sortedList);
+  })
 });
