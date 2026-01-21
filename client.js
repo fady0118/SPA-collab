@@ -4,22 +4,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     e.preventDefault();
     sendRequest();
   });
-  async function sendRequest() {
-    const formData = new FormData(formEl);
-    try {
-      const response = await fetch("http://localhost:4000/video-request", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      console.log(data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   const requestsContainer = document.getElementById("listOfRequests");
-  const requestsList = await getRequests();
+  let requestsList = await getRequests();
 
   function renderList(list) {
     requestsContainer.innerHTML = "";
@@ -28,6 +15,23 @@ document.addEventListener("DOMContentLoaded", async function () {
       requestsContainer.appendChild(vidRequestEl);
     });
   }
+
+  async function sendRequest() {
+    const formData = new FormData(formEl);
+    try {
+      const response = await fetch("http://localhost:4000/video-request", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      requestsList.push(data);
+      const vidRequestEl = getSingleVidReq(data);
+      requestsContainer.prepend(vidRequestEl);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   renderList(requestsList);
 
   async function getRequests() {
@@ -36,24 +40,24 @@ document.addEventListener("DOMContentLoaded", async function () {
     return vidRequests;
   }
 
-async function updateVote(vote_type, request_id, e) {
+  async function updateVote(vote_type, request_id, e) {
     try {
-        const response = await fetch(`http://localhost:4000/video-request/vote/${request_id}`, {
-            headers:{ "Content-Type": "application/json" },
-            method:"PATCH",
-            body:JSON.stringify({vote_type: vote_type})
-        })
-        const data = await response.json();
-        const voteScoreEl = e.target.parentElement.querySelector(".voteScore");
-        const voteScore = data.newRequest.votes["ups"] - data.newRequest.votes["downs"];
-        voteScoreEl.textContent = voteScore;
-        const index = requestsList.findIndex(reqItem=>reqItem._id===data.newRequest._id);
-        requestsList[index].votes = data.newRequest.votes;
-        console.log(requestsList[index])
+      const response = await fetch(`http://localhost:4000/video-request/vote/${request_id}`, {
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+        body: JSON.stringify({ vote_type: vote_type }),
+      });
+      const data = await response.json();
+      const voteScoreEl = e.target.parentElement.querySelector(".voteScore");
+      const voteScore = data.newRequest.votes["ups"] - data.newRequest.votes["downs"];
+      voteScoreEl.textContent = voteScore;
+
+      const index = requestsList.findIndex((reqItem) => reqItem._id === data.newRequest._id);
+      requestsList[index].votes = data.newRequest.votes;
     } catch (error) {
-        console.log(error)
+      console.log(error);
     }
-}
+  }
 
   function getSingleVidReq(request) {
     let date = new Date(request.createdAt);
@@ -91,21 +95,21 @@ async function updateVote(vote_type, request_id, e) {
 
     const requestEl = document.createElement("div");
     requestEl.innerHTML = vidRequestTemplate;
-    requestEl.querySelector(".upvote-btn").addEventListener("click", (e)=>{
-        updateVote("ups", request._id, e)
-    })
-    requestEl.querySelector(".downvote-btn").addEventListener("click", (e)=>{
-        updateVote("downs", request._id, e)
-    })
-    return requestEl
+    requestEl.querySelector(".upvote-btn").addEventListener("click", (e) => {
+      updateVote("ups", request._id, e);
+    });
+    requestEl.querySelector(".downvote-btn").addEventListener("click", (e) => {
+      updateVote("downs", request._id, e);
+    });
+    return requestEl;
   }
   // SORTING
-  document.getElementById("newFirstSort").addEventListener("click", ()=>{
-    const sortedList = [...requestsList].sort((a,b)=>a.createdAt - b.createdAt)
+  document.getElementById("newFirstSort").addEventListener("click", () => {
+    const sortedList = [...requestsList].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     renderList(sortedList);
-  })
-  document.getElementById("topVotedFirstSort").addEventListener("click", ()=>{
-    const sortedList = [...requestsList].sort((a,b)=>(b.votes["ups"]-b.votes["downs"]) - (a.votes["ups"]-a.votes["downs"]))
+  });
+  document.getElementById("topVotedFirstSort").addEventListener("click", () => {
+    const sortedList = [...requestsList].sort((a, b) => b.votes["ups"] - b.votes["downs"] - (a.votes["ups"] - a.votes["downs"]));
     renderList(sortedList);
-  })
+  });
 });
