@@ -104,12 +104,54 @@ document.addEventListener("DOMContentLoaded", async function () {
     return requestEl;
   }
   // SORTING
-  document.getElementById("newFirstSort").addEventListener("click", () => {
-    const sortedList = [...requestsList].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    renderList(sortedList);
+  const sortingElms = document.querySelectorAll(".sort_by");
+  const searchElm = document.getElementById("searchBox");
+  let sortByType = "New First";
+  let searchTerm = undefined;
+
+  sortingElms.forEach((elm) => {
+    elm.addEventListener("click", async (e) => {
+      e.preventDefault();
+      sortByType = e.target.value;
+      await getSortedVidReqs(sortByType, searchTerm);
+      sortingElms.forEach((element) => {
+        element.classList.remove("active");
+      });
+      e.target.classList.add("active");
+    });
   });
-  document.getElementById("topVotedFirstSort").addEventListener("click", () => {
-    const sortedList = [...requestsList].sort((a, b) => b.votes["ups"] - b.votes["downs"] - (a.votes["ups"] - a.votes["downs"]));
-    renderList(sortedList);
+  // search
+  searchElm.addEventListener("input", async (e) => {
+    searchTerm = e.target.value;
+    debounceSearch(sortByType, searchTerm);
   });
+  searchElm.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter"){
+    searchTerm = e.target.value;
+    debounceSearch(sortByType, searchTerm);
+    }
+  })
+  document.getElementById("clearSearchBox").addEventListener("click", (e) => {
+    searchElm.value = "";
+    searchTerm=undefined;
+  });
+
+  // getVidReqs
+  async function getSortedVidReqs(sortBy = "New First", searchTerm = undefined) {
+    const searchTermQuery = searchTerm ? `&topic_title=${searchTerm}` : "";
+    const response = await fetch(`http://localhost:4000/video-request?sortBy=${sortBy}${searchTermQuery}`);
+    const sortedRequests = await response.json();
+    renderList(sortedRequests);
+  }
+  // debounce
+  function debounce(callback, delay = 300) {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => callback(...args), delay);
+    };
+  }
+  const debounceSearch = debounce(async (sortType = "New First", searchTerm) => {
+    await getSortedVidReqs(sortType, searchTerm);
+  }, 1000);
 });

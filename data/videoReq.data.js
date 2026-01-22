@@ -22,39 +22,28 @@ const createRequest = async (req, res) => {
 };
 
 const getAllVideoRequests = async (req, res) => {
+  const {sortBy, ...searchTerm} = req.query;
   try {
-    const data = await VideoReq.find({}).sort({ createdAt: -1 }); 
+    let data;
+    if(Object.entries(searchTerm).length){
+      const {topic_title} = searchTerm
+      data = await VideoReq.find({topic_title:{$regex:topic_title, $options:'i'}}).sort({ createdAt: -1 }); 
+    } else {
+      data = await VideoReq.find({}).sort({ createdAt: -1 }); 
+    }
     if (!data) {
       return res.status(404).json("data not found");
     }
-    res.status(200).json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const searchRequests = async (req, res) => {
-  // rn we only search for topic but we can search for author name or email, target_level or status
-  const { topic_title } = req.query;
-  try {
-    const topics = await VideoReq.find({ topic_title }).sort({ createdAt: -1 });
-    if (!topics) {
-      return res.status(404).json("no request found");
+    if(sortBy === "New First"){
+      data = data.sort((a, b)=> new Date(b.createdAt) - new Date(a.createdAt))
+    }else if (sortBy === "Top Voted First"){
+      data = data.sort((a, b)=>(b.votes["ups"]-b.votes["downs"])-(a.votes["ups"]-a.votes["downs"]))
     }
-    res.status(200).json({ topics });
+    res.send(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
-const getVideoReq = async (req, res) => {
-  const searchTerm = req.query;
-  if(Object.entries(searchTerm).length){
-    return searchRequests(req, res)
-  } else{
-    return getAllVideoRequests(req, res)
-  }
-}
 
 const getVideoRequestById = async (req, res) => {
   const video_Id = req.params.id;
@@ -122,4 +111,4 @@ const updateVoteForRequest = async (req, res) => {
 };
 
 
-export { createRequest, getVideoReq, getVideoRequestById, updateVideoRequest, deleteVideoRequest, updateVoteForRequest };
+export { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest, updateVoteForRequest };

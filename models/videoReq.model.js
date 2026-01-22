@@ -5,9 +5,9 @@ const VideoRequestsSchema = new Schema(
     // author: { type: Schema.Types.ObjectId, ref: "User", required: true },
     author_name: { type: String, required: true, trim: true },
     author_email: { type: String, required: true, trim: true },
-    topic_title: { type: String, required: true },
-    topic_details: { type: String, required: true },
-    expected_result: { type: String },
+    topic_title: { type: String, required: true, trim: true },
+    topic_details: { type: String, required: true, trim: true },
+    expected_result: { type: String, trim: true },
     votes: {
       ups: { type: Number, default: 0 },
       downs: { type: Number, default: 0 },
