@@ -5,14 +5,18 @@ document.addEventListener("DOMContentLoaded", async function () {
   // add form eventlisteners
   formEl.addEventListener("submit", (e) => {
     e.preventDefault();
-    sendRequest();
+    sendVidRequest();
   });
-  // singInformEl.addEventListener("submit", (e)=>{
-  //   e.preventDefault();
-  //   signInRequest(e.submitter.name);
-  // })
+  singInformEl.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    signInRequest();
+  })
   let requestsList;
-  let paramId;
+  const state = {
+    sortBy:"New First",
+    searchTerm:undefined,
+    userId:"",
+  }
   if (window.location.search) {
     const userId = new URLSearchParams(window.location.search).get("id");
     if (!userId) {
@@ -21,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     await displayDashboard();
     document.getElementById("loginFormContainer").classList.add("d-none");
     document.getElementById("app_container").classList.remove("d-none");
-    paramId = userId;
+    state.userId = userId;
   }
   // display requests
   async function displayDashboard() {
@@ -95,14 +99,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     return validationErrors;
   }
   // form handlers
-  async function sendRequest() {
+  function signInRequest() {
+    const formData = new FormData(singInformEl);
+    console.log(formData);
+    const validationErrors = checkSignInFormValidity(formData);
+    if (validationErrors) {
+      return;
+    }
+    singInformEl.submit();
+  }
+  async function sendVidRequest() {
     const formData = new FormData(formEl);
     const validationErrors = checkTopicFormValidity(formData);
     if (validationErrors) {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:4000/video-request?id=${paramId||""}`, {
+      const response = await fetch(`http://localhost:4000/video-request?id=${state.userId||""}`, {
         method: "POST",
         body: formData,
       });
@@ -212,14 +225,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   // SORTING
   const sortingElms = document.querySelectorAll(".sort_by");
   const searchElm = document.getElementById("searchBox");
-  let sortByType = "New First";
-  let searchTerm = undefined;
 
   sortingElms.forEach((elm) => {
     elm.addEventListener("click", async (e) => {
       e.preventDefault();
-      sortByType = e.target.value;
-      await getSortedVidReqs(sortByType, searchTerm);
+      state.sortBy = e.target.value;
+      await getSortedVidReqs(state.sortBy, state.searchTerm);
       sortingElms.forEach((element) => {
         element.classList.remove("active");
       });
@@ -228,19 +239,19 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
   // search
   searchElm.addEventListener("input", async (e) => {
-    searchTerm = e.target.value;
-    debounceSearch(sortByType, searchTerm);
+    state.searchTerm = e.target.value;
+    debounceSearch(state.sortBy, state.searchTerm);
   });
   searchElm.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-      searchTerm = e.target.value;
-      debounceSearch(sortByType, searchTerm);
+      state.searchTerm = e.target.value;
+      debounceSearch(state.sortBy, state.searchTerm);
     }
   });
   document.getElementById("clearSearchBox").addEventListener("click", (e) => {
     searchElm.value = "";
-    searchTerm = undefined;
-    debounceSearch(sortByType, searchTerm);
+    state.searchTerm = undefined;
+    debounceSearch(state.sortBy, state.searchTerm);
   });
 
   // getVidReqs
@@ -258,7 +269,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       timeoutId = setTimeout(() => callback(...args), delay);
     };
   }
-  const debounceSearch = debounce(async (sortType = "New First", searchTerm) => {
+  const debounceSearch = debounce(async (sortType, searchTerm) => {
     await getSortedVidReqs(sortType, searchTerm);
   }, 500);
 });
