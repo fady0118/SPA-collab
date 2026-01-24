@@ -1,17 +1,34 @@
 document.addEventListener("DOMContentLoaded", async function () {
   const formEl = document.getElementById("requestForm");
   const singInformEl = document.getElementById("loginForm");
+  const requestsContainer = document.getElementById("listOfRequests");
+  // add form eventlisteners
   formEl.addEventListener("submit", (e) => {
     e.preventDefault();
     sendRequest();
   });
-  singInformEl.addEventListener("submit", (e)=>{
-    e.preventDefault();
-    signInRequest();
-  })
-  const requestsContainer = document.getElementById("listOfRequests");
-  let requestsList = await getRequests();
-
+  // singInformEl.addEventListener("submit", (e)=>{
+  //   e.preventDefault();
+  //   signInRequest(e.submitter.name);
+  // })
+  let requestsList;
+  let paramId;
+  if (window.location.search) {
+    const userId = new URLSearchParams(window.location.search).get("id");
+    if (!userId) {
+      return;
+    }
+    await displayDashboard();
+    document.getElementById("loginFormContainer").classList.add("d-none");
+    document.getElementById("app_container").classList.remove("d-none");
+    paramId = userId;
+  }
+  // display requests
+  async function displayDashboard() {
+    requestsList = await getRequests();
+    renderList(requestsList);
+  }
+  // render requests
   function renderList(list) {
     requestsContainer.innerHTML = "";
     list.forEach((request) => {
@@ -20,11 +37,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   }
   // SUBMITTING FORM
+  // validation
   function checkSignInFormValidity(formData) {
     const name = formData.get("author_name");
     const email = formData.get("author_email");
-    let validationErrors=0;
-    
+    let validationErrors = 0;
+
     if (!name) {
       // formEl.author_name.nextElementSibling.style.display="block";
       singInformEl.author_name.classList.add("is-invalid");
@@ -39,60 +57,52 @@ document.addEventListener("DOMContentLoaded", async function () {
       singInformEl.author_email.classList.add("is-invalid");
       validationErrors++;
     }
-    const allInvalidElms = singInformEl.querySelectorAll('.is-invalid');
-    allInvalidElms.forEach(element=>{
-      element.addEventListener("input", (e)=>{
-        e.target.classList.remove("is-invalid")
-      })
-    })
-    return validationErrors
+    const allInvalidElms = singInformEl.querySelectorAll(".is-invalid");
+    allInvalidElms.forEach((element) => {
+      element.addEventListener("input", (e) => {
+        e.target.classList.remove("is-invalid");
+      });
+    });
+    return validationErrors;
   }
-
-  function checkTopicFormValidity(formData){
+  function checkTopicFormValidity(formData) {
     const topic_title = formData.get("topic_title");
     const topic_details = formData.get("topic_details");
     let validationErrors = 0;
 
-    if(!topic_title){
+    if (!topic_title) {
       formEl.topic_title.classList.add("is-invalid");
       formEl.topic_title.nextElementSibling.nextElementSibling.classList.add("d-none");
       validationErrors++;
     }
-    if(topic_title && topic_title.length>100){
-      console.log(topic_title)
+    if (topic_title && topic_title.length > 100) {
+      console.log(topic_title);
       formEl.topic_title.classList.add("is-invalid");
       formEl.topic_title.nextElementSibling.classList.add("d-none");
       validationErrors++;
     }
-    if(!topic_details){
+    if (!topic_details) {
       formEl.topic_details.classList.add("is-invalid");
       validationErrors++;
     }
 
     const allInvalidElms = formEl.querySelectorAll(".is-invalid");
-    allInvalidElms.forEach(element=>{
-      element.addEventListener("input", (e)=>{
-        e.target.classList.remove("is-invalid")
-      })
-    })
+    allInvalidElms.forEach((element) => {
+      element.addEventListener("input", (e) => {
+        e.target.classList.remove("is-invalid");
+      });
+    });
     return validationErrors;
   }
-
-  async function signInRequest() {
-    const formData = new FormData(singInformEl);
-    const validationErrors = checkSignInFormValidity(formData);
-    // document.getElementById("loginFormContainer").classList.add("d-none")
-    // document.getElementById("app_container").classList.remove("d-none")
-    return;
-  }
+  // form handlers
   async function sendRequest() {
     const formData = new FormData(formEl);
     const validationErrors = checkTopicFormValidity(formData);
-    if(validationErrors){
+    if (validationErrors) {
       return;
     }
     try {
-      const response = await fetch("http://localhost:4000/video-request", {
+      const response = await fetch(`http://localhost:4000/video-request?id=${paramId||""}`, {
         method: "POST",
         body: formData,
       });
@@ -104,9 +114,32 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.log(error);
     }
   }
-
-  renderList(requestsList);
-
+  // swap login & signup
+  const loginBtn = singInformEl.querySelector("#loginBtn");
+  const signupBtn = singInformEl.querySelector("#signupBtn");
+  const signupLink = singInformEl.querySelector("#login2Register");
+  const loginLink = singInformEl.querySelector("#Register2login");
+  signupLink.addEventListener("click", (e) => {
+    // show other button
+    loginBtn.classList.add("d-none");
+    signupBtn.classList.remove("d-none");
+    // show other link
+    signupLink.classList.add("d-none");
+    loginLink.classList.remove("d-none");
+    // form action
+    singInformEl.setAttribute("action", "http://localhost:4000/user/signup");
+  });
+  loginLink.addEventListener("click", (e) => {
+    // show other button
+    loginBtn.classList.remove("d-none");
+    signupBtn.classList.add("d-none");
+    // show other link
+    loginLink.classList.add("d-none");
+    signupLink.classList.remove("d-none");
+    // form action
+    singInformEl.setAttribute("action", "http://localhost:4000/user/login");
+  });
+  // fetch requests
   async function getRequests() {
     const response = await fetch("http://localhost:4000/video-request");
     const vidRequests = await response.json();
@@ -198,15 +231,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     searchTerm = e.target.value;
     debounceSearch(sortByType, searchTerm);
   });
-  searchElm.addEventListener("keydown", (e)=>{
-    if(e.key === "Enter"){
-    searchTerm = e.target.value;
-    debounceSearch(sortByType, searchTerm);
+  searchElm.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      searchTerm = e.target.value;
+      debounceSearch(sortByType, searchTerm);
     }
-  })
+  });
   document.getElementById("clearSearchBox").addEventListener("click", (e) => {
     searchElm.value = "";
-    searchTerm=undefined;
+    searchTerm = undefined;
     debounceSearch(sortByType, searchTerm);
   });
 

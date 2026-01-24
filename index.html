@@ -21,7 +21,7 @@
 <body>
     <div class="container my-5 d-flex flex-column justify-content-center">
         <div id="loginFormContainer" class="login-Form mt-5 col-md-4 offset-md-4 ">
-            <form  id="loginForm" class="d-flex flex-column align-items-center" novalidate>
+            <form action="http://localhost:4000/user/login" method="post" id="loginForm" class="d-flex flex-column align-items-center" novalidate>
                 <div class="mb-2 col-md-8">
                     <div class="form-group">
                         <label class="form-label" for="author_name">Your name
@@ -46,9 +46,14 @@
                         </p>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3 col-md-8">
+                <button id="loginBtn" name="loginBtn" type="submit" class="btn btn-primary mt-3 col-md-8">
                     Login
                 </button>
+                <button id="signupBtn" name="signupBtn" type="submit" class="btn btn-primary mt-3 col-md-8 d-none">
+                    Signup
+                </button>
+                <p id="login2Register">don't have account? <a role="button" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">register instead</a></p>
+                <p id="Register2login" class=" d-none">already have an account? <a role="button" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">login instead</a></p>
             </form>
         </div>
         <div id="app_container" class="app-Content my-5 d-none">

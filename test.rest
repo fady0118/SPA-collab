@@ -44,3 +44,21 @@ Content-Type: application/json
 }
 
 ### USERS
+### sign up
+POST  http://localhost:4000/user/signup 
+Content-Type: application/json
+
+{
+    "author_name":"mark",
+    "author_email":"markus1@mail.com"
+}
+### login
+POST  http://localhost:4000/user/login 
+Content-Type: application/json
+
+{
+    "author_name":"mark",
+    "author_email":"markus1@mail.com"
+}
+### get all users
+GET http://localhost:4000/user
