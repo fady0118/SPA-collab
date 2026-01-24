@@ -1,10 +1,14 @@
 document.addEventListener("DOMContentLoaded", async function () {
   const formEl = document.getElementById("requestForm");
+  const singInformEl = document.getElementById("loginForm");
   formEl.addEventListener("submit", (e) => {
     e.preventDefault();
     sendRequest();
   });
-
+  singInformEl.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    signInRequest();
+  })
   const requestsContainer = document.getElementById("listOfRequests");
   let requestsList = await getRequests();
 
@@ -15,9 +19,78 @@ document.addEventListener("DOMContentLoaded", async function () {
       requestsContainer.appendChild(vidRequestEl);
     });
   }
+  // SUBMITTING FORM
+  function checkSignInFormValidity(formData) {
+    const name = formData.get("author_name");
+    const email = formData.get("author_email");
+    let validationErrors=0;
+    
+    if (!name) {
+      // formEl.author_name.nextElementSibling.style.display="block";
+      singInformEl.author_name.classList.add("is-invalid");
+      validationErrors++;
+    }
+    if (!email) {
+      singInformEl.author_email.classList.add("is-invalid");
+      validationErrors++;
+    }
+    const regex_email = /^((?!\.)[\w\-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/gm;
+    if (email && !email.match(regex_email)) {
+      singInformEl.author_email.classList.add("is-invalid");
+      validationErrors++;
+    }
+    const allInvalidElms = singInformEl.querySelectorAll('.is-invalid');
+    allInvalidElms.forEach(element=>{
+      element.addEventListener("input", (e)=>{
+        e.target.classList.remove("is-invalid")
+      })
+    })
+    return validationErrors
+  }
 
+  function checkTopicFormValidity(formData){
+    const topic_title = formData.get("topic_title");
+    const topic_details = formData.get("topic_details");
+    let validationErrors = 0;
+
+    if(!topic_title){
+      formEl.topic_title.classList.add("is-invalid");
+      formEl.topic_title.nextElementSibling.nextElementSibling.classList.add("d-none");
+      validationErrors++;
+    }
+    if(topic_title && topic_title.length>100){
+      console.log(topic_title)
+      formEl.topic_title.classList.add("is-invalid");
+      formEl.topic_title.nextElementSibling.classList.add("d-none");
+      validationErrors++;
+    }
+    if(!topic_details){
+      formEl.topic_details.classList.add("is-invalid");
+      validationErrors++;
+    }
+
+    const allInvalidElms = formEl.querySelectorAll(".is-invalid");
+    allInvalidElms.forEach(element=>{
+      element.addEventListener("input", (e)=>{
+        e.target.classList.remove("is-invalid")
+      })
+    })
+    return validationErrors;
+  }
+
+  async function signInRequest() {
+    const formData = new FormData(singInformEl);
+    const validationErrors = checkSignInFormValidity(formData);
+    // document.getElementById("loginFormContainer").classList.add("d-none")
+    // document.getElementById("app_container").classList.remove("d-none")
+    return;
+  }
   async function sendRequest() {
     const formData = new FormData(formEl);
+    const validationErrors = checkTopicFormValidity(formData);
+    if(validationErrors){
+      return;
+    }
     try {
       const response = await fetch("http://localhost:4000/video-request", {
         method: "POST",
@@ -134,6 +207,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   document.getElementById("clearSearchBox").addEventListener("click", (e) => {
     searchElm.value = "";
     searchTerm=undefined;
+    debounceSearch(sortByType, searchTerm);
   });
 
   // getVidReqs
@@ -153,5 +227,5 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
   const debounceSearch = debounce(async (sortType = "New First", searchTerm) => {
     await getSortedVidReqs(sortType, searchTerm);
-  }, 1000);
+  }, 500);
 });

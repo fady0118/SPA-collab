@@ -1,5 +1,7 @@
 ### test /
 GET http://localhost:4000/
+
+### REQUESTS
 ### get videoRequests
 GET http://localhost:4000/video-request?sortBy=New First&topic_title=Red Dead
 ### get videoRequests
@@ -24,14 +26,14 @@ Content-Type: application/json
 GET http://localhost:4000/video-request/id
 
 ### update video request by id
-PATCH  http://localhost:4000/video-request/id
+PATCH  http://localhost:4000/video-request/6972598234ac7f4aaa222ee5
 Content-Type: application/json
 
 {
-    "topic_details":"movie watchparty"
+    "target_level": "beginner"
 }
 ### delete video request by id
-DELETE  http://localhost:4000/video-request/id
+DELETE  http://localhost:4000/video-request/697362f21da3a72bc74f342d
 
 ### update video request vote by id
 PATCH   http://localhost:4000/video-request/id
@@ -40,3 +42,5 @@ Content-Type: application/json
 {
     "vote_type":"ups"
 }
+
+### USERS
