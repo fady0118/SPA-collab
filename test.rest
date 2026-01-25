@@ -23,7 +23,7 @@ Content-Type: application/json
 
 }
 ### get video request by id
-GET http://localhost:4000/video-request/id
+GET http://localhost:4000/video-request/6973a8866bbf1d53af26c4c8
 
 ### update video request by id
 PATCH  http://localhost:4000/video-request/6972598234ac7f4aaa222ee5
@@ -36,11 +36,11 @@ Content-Type: application/json
 DELETE  http://localhost:4000/video-request/697362f21da3a72bc74f342d
 
 ### update video request vote by id
-PATCH   http://localhost:4000/video-request/id
+PATCH   http://localhost:4000/video-request/vote/6973a8866bbf1d53af26c4c8
 Content-Type: application/json
 
 {
-    "vote_type":"ups"
+    "vote_type":"ups",
 }
 
 ### USERS

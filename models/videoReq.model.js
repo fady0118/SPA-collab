@@ -9,10 +9,10 @@ const VideoRequestsSchema = new Schema(
     topic_details: { type: String, required: true, trim: true },
     expected_result: { type: String, trim: true },
     votes: {
-      ups: { type: Number, default: 0 },
-      downs: { type: Number, default: 0 },
+      ups: { type: [String], default: [],  },
+      downs: { type: [String], default: [],  },
     },
-    target_level: { type: String, default: "beginner" },
+    target_level: { type: String, enum:[ "beginner", "medium", "advanced"], lowercase: true, default: "beginner" },
     status: { type: String, default: "new" },
     video_ref: {
       link: { type: String, default: "" },

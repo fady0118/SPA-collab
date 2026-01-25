@@ -26,9 +26,9 @@ app.get("/", (req, res) => {
 // videoReq routes
 app.get("/video-request", getAllVideoRequests);
 app.get("/video-request/:id", getVideoRequestById);
-app.post("/video-request", authMiddleware, upload.none(),createRequest);
+app.post("/video-request", upload.none(), authMiddleware, createRequest);
 app.patch("/video-request/:id", updateVideoRequest);
-app.patch("/video-request/vote/:id", updateVoteForRequest);
+app.patch("/video-request/vote/:id", authMiddleware, updateVoteForRequest);
 app.delete("/video-request/:id", deleteVideoRequest);
 // user routes
 app.get("/user/", getAllUsers)

@@ -7,25 +7,26 @@ document.addEventListener("DOMContentLoaded", async function () {
     e.preventDefault();
     sendVidRequest();
   });
-  singInformEl.addEventListener("submit", (e)=>{
+  singInformEl.addEventListener("submit", (e) => {
     e.preventDefault();
     signInRequest();
-  })
+  });
   let requestsList;
   const state = {
-    sortBy:"New First",
-    searchTerm:undefined,
-    userId:"",
-  }
+    sortBy: "New First",
+    searchTerm: undefined,
+    userId: "",
+  };
   if (window.location.search) {
     const userId = new URLSearchParams(window.location.search).get("id");
     if (!userId) {
       return;
     }
+    state.userId = userId;
     await displayDashboard();
     document.getElementById("loginFormContainer").classList.add("d-none");
     document.getElementById("app_container").classList.remove("d-none");
-    state.userId = userId;
+    console.log(state);
   }
   // display requests
   async function displayDashboard() {
@@ -110,12 +111,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
   async function sendVidRequest() {
     const formData = new FormData(formEl);
+    formData.append("userId", state.userId);
+    console.log(formData);
+    // ?id=${state.userId||""
     const validationErrors = checkTopicFormValidity(formData);
     if (validationErrors) {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:4000/video-request?id=${state.userId||""}`, {
+      const response = await fetch(`http://localhost:4000/video-request`, {
         method: "POST",
         body: formData,
       });
@@ -164,11 +168,17 @@ document.addEventListener("DOMContentLoaded", async function () {
       const response = await fetch(`http://localhost:4000/video-request/vote/${request_id}`, {
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
-        body: JSON.stringify({ vote_type: vote_type }),
+        body: JSON.stringify({ vote_type: vote_type, userId: state.userId }),
       });
       const data = await response.json();
+      
+      const upvoteBtn = e.target.parentElement.children.ups;
+      const downvoteBtn = e.target.parentElement.children.downs;
+      data.newRequest.votes[upvoteBtn.name].includes(state.userId)? upvoteBtn.classList.add("voteBtnStyle"): upvoteBtn.classList.remove("voteBtnStyle");
+      data.newRequest.votes[downvoteBtn.name].includes(state.userId)? downvoteBtn.classList.add("voteBtnStyle"): downvoteBtn.classList.remove("voteBtnStyle");
+
       const voteScoreEl = e.target.parentElement.querySelector(".voteScore");
-      const voteScore = data.newRequest.votes["ups"] - data.newRequest.votes["downs"];
+      const voteScore = data.newRequest.votes["ups"].length - data.newRequest.votes["downs"].length;
       voteScoreEl.textContent = voteScore;
 
       const index = requestsList.findIndex((reqItem) => reqItem._id === data.newRequest._id);
@@ -191,9 +201,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                         </p>
                     </div>
                     <div class="d-flex flex-column text-center">
-                        <a class="btn btn-link upvote-btn">🔺</a>
-                        <h3 class="voteScore">${request.votes["ups"] - request.votes["downs"]}</h3>
-                        <a class="btn btn-link downvote-btn">🔻</a>
+                        <a class="btn upvote-btn ${request.votes["ups"].includes(state.userId)?"voteBtnStyle":""}" name="ups">🢁</a>
+                        <h3 class="voteScore">${request.votes["ups"].length - request.votes["downs"].length}</h3>
+                        <a class="btn downvote-btn ${request.votes["downs"].includes(state.userId)?"voteBtnStyle":""}" name="downs">🢃</a>
                     </div>
                 </div>
                 <div

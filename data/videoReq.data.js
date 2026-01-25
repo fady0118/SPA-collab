@@ -10,7 +10,7 @@ const createRequest = async (req, res) => {
       topic_title,
       topic_details,
       expected_result,
-      target_level: target_level ?? undefined,
+      target_level: target_level ?? "beginner",
     });
 
     if (!video_req) {
@@ -99,17 +99,54 @@ const updateVoteForRequest = async (req, res) => {
     if (!oldRequest) {
       return res.status(404).json("request not found");
     }
-    const newRequest = await VideoReq.findByIdAndUpdate(
-      req.params.id,
-      {
-        votes: {
-          [vote_type]: ++oldRequest.votes[vote_type],
-          [other_type]: oldRequest.votes[other_type],
+    // scenarios
+    // A. user hasn't voted before
+    // B. user already voted and wants to remove his vote
+    // C. user already voted other_type before and wants to change vote_type
+    let newRequest;
+    // A)
+    if (!oldRequest.votes[vote_type].includes(req.user._id) && !oldRequest.votes[other_type].includes(req.user._id)) {
+      // add req.user._id to vote_type
+      newRequest = await VideoReq.findByIdAndUpdate(
+        req.params.id,
+        {
+          votes: {
+            [vote_type]: [...oldRequest.votes[vote_type], req.user._id],
+            [other_type]: oldRequest.votes[other_type],
+          },
         },
-      },
-      { new: true },
-    );
-    res.status(200).json({ message: "votes updated", newRequest });
+        { new: true },
+      );
+    }
+    // B)
+    else if (oldRequest.votes[vote_type].includes(req.user._id)) {
+      // remove req.user._id from vote_type
+      newRequest = await VideoReq.findByIdAndUpdate(
+        req.params.id,
+        {
+          votes: {
+            [vote_type]: oldRequest.votes[vote_type].filter((currentId) => currentId.toString() !== req.user._id.toString()),
+            [other_type]: oldRequest.votes[other_type],
+          },
+        },
+        { new: true },
+      );
+    }
+    // C)
+    else if (oldRequest.votes[other_type].includes(req.user._id)) {
+      // change req.user._id from other_type to vote_type
+      newRequest = await VideoReq.findByIdAndUpdate(
+        req.params.id,
+        {
+          votes: {
+            [vote_type]: [...oldRequest.votes[vote_type], req.user._id],
+            [other_type]: oldRequest.votes[other_type].filter((currentId) => currentId.toString() !== req.user._id.toString()),
+          },
+        },
+        { new: true },
+      );
+    }
+    res.status(200).json({ message: "votes updated", oldRequest, newRequest });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
