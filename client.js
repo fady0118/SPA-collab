@@ -17,20 +17,46 @@ document.addEventListener("DOMContentLoaded", async function () {
     searchTerm: undefined,
     userId: "",
   };
+  async function checkUserId(userId) {
+    return await fetch("http://localhost:4000/user/checkId", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.userId }),
+    });
+  }
   if (window.location.search) {
     const userId = new URLSearchParams(window.location.search).get("id");
     if (!userId) {
       return;
     }
     state.userId = userId;
-    await displayDashboard();
+    // check that the id belongs to a user
+    const response = await checkUserId(state.userId);
+    if (!response.ok) {
+      return;
+    }
+    const user = await response.json();
+    console.log(user);
+    if (user.role === "super user") {
+      await displayDashboard("admin");
+    } else {
+      await displayDashboard("user");
+    }
     document.getElementById("loginFormContainer").classList.add("d-none");
     document.getElementById("app_container").classList.remove("d-none");
-    console.log(state);
   }
   // display requests
-  async function displayDashboard() {
+  async function displayDashboard(role) {
+    if (role === "admin") {
+      // display admin stuff
+      document.getElementById("requestForm").classList.add("d-none");
+    } else if (role === "user") {
+      // display user stuff
+
+    }
+      // display admin-user common stuff
     requestsList = await getRequests();
+    console.log(requestsList)
     renderList(requestsList);
   }
   // render requests
@@ -170,11 +196,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         body: JSON.stringify({ vote_type: vote_type, userId: state.userId }),
       });
       const data = await response.json();
-      
+
       const upvoteBtn = e.target.parentElement.children.ups;
       const downvoteBtn = e.target.parentElement.children.downs;
-      data.newRequest.votes[upvoteBtn.name].includes(state.userId)? upvoteBtn.classList.add("voteBtnStyle"): upvoteBtn.classList.remove("voteBtnStyle");
-      data.newRequest.votes[downvoteBtn.name].includes(state.userId)? downvoteBtn.classList.add("voteBtnStyle"): downvoteBtn.classList.remove("voteBtnStyle");
+      data.newRequest.votes[upvoteBtn.name].includes(state.userId) ? upvoteBtn.classList.add("voteBtnStyle") : upvoteBtn.classList.remove("voteBtnStyle");
+      data.newRequest.votes[downvoteBtn.name].includes(state.userId) ? downvoteBtn.classList.add("voteBtnStyle") : downvoteBtn.classList.remove("voteBtnStyle");
 
       const voteScoreEl = e.target.parentElement.querySelector(".voteScore");
       const voteScore = data.newRequest.votes["ups"].length - data.newRequest.votes["downs"].length;
@@ -200,9 +226,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                         </p>
                     </div>
                     <div class="d-flex flex-column text-center">
-                        <a class="btn upvote-btn ${request.votes["ups"].includes(state.userId)?"voteBtnStyle":""}" name="ups">🢁</a>
+                        <a class="btn upvote-btn ${request.votes["ups"].includes(state.userId) ? "voteBtnStyle" : ""}" name="ups">🢁</a>
                         <h3 class="voteScore">${request.votes["ups"].length - request.votes["downs"].length}</h3>
-                        <a class="btn downvote-btn ${request.votes["downs"].includes(state.userId)?"voteBtnStyle":""}" name="downs">🢃</a>
+                        <a class="btn downvote-btn ${request.votes["downs"].includes(state.userId) ? "voteBtnStyle" : ""}" name="downs">🢃</a>
                     </div>
                 </div>
                 <div
@@ -223,12 +249,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const requestEl = document.createElement("div");
     requestEl.innerHTML = vidRequestTemplate;
-    const voteButtons = requestEl.querySelectorAll("[class*='-btn']")
-    voteButtons.forEach(voteBtn=>{
+    const voteButtons = requestEl.querySelectorAll("[class*='-btn']");
+    voteButtons.forEach((voteBtn) => {
       voteBtn.addEventListener("click", (e) => {
-      updateVote(request._id, e);
+        updateVote(request._id, e);
+      });
     });
-    })
     // requestEl.querySelector(".upvote-btn").addEventListener("click", (e) => {
     //   updateVote(request._id, e);
     // });
@@ -271,7 +297,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // getVidReqs
   async function getSortedVidReqs(sortBy = "New First", searchTerm = undefined) {
-    console.log(`getSorted: ${sortBy}`)
+    console.log(`getSorted: ${sortBy}`);
     const searchTermQuery = searchTerm ? `&topic_title=${searchTerm}` : "";
     const response = await fetch(`http://localhost:4000/video-request?sortBy=${sortBy}${searchTermQuery}`);
     const sortedRequests = await response.json();

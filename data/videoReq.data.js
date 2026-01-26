@@ -1,12 +1,12 @@
 import { VideoReq } from "../models/videoReq.model.js";
 // req.user comes from th middleware & req.body from the frontend
 const createRequest = async (req, res) => {
-  const { author_name, author_email } = req.user;
+  const { _id } = req.user;
+  console.log(_id)
   const { topic_title, topic_details, expected_result, target_level } = req.body;
   try {
     const video_req = await VideoReq.create({
-      author_name,
-      author_email,
+      author:_id,
       topic_title,
       topic_details,
       expected_result,
@@ -28,9 +28,9 @@ const getAllVideoRequests = async (req, res) => {
     let data;
     if (Object.entries(searchTerm).length) {
       const { topic_title } = searchTerm;
-      data = await VideoReq.find({ topic_title: { $regex: topic_title, $options: "i" } }).sort({ createdAt: -1 });
+      data = await VideoReq.find({ topic_title: { $regex: topic_title, $options: "i" } }).populate("author").sort({ createdAt: -1 });
     } else {
-      data = await VideoReq.find({}).sort({ createdAt: -1 });
+      data = await VideoReq.find({}).populate("author").sort({ createdAt: -1 });
     }
     if (!data) {
       return res.status(404).json("data not found");

@@ -16,11 +16,9 @@ POST http://localhost:4000/video-request
 Content-Type: application/json
 
 {
-    "author_name":"marx1",
-    "author_email":"marxy11@mail.com",
+    "userId":"6977a890207d14c2f8e93546",
     "topic_title":"SPA", 
     "topic_details":"single page app in vanilla js"
-
 }
 ### get video request by id
 GET http://localhost:4000/video-request/6973a8866bbf1d53af26c4c8
@@ -52,13 +50,22 @@ Content-Type: application/json
     "author_name":"mark",
     "author_email":"markus1@mail.com"
 }
+
+
 ### login
 POST  http://localhost:4000/user/login 
 Content-Type: application/json
 
 {
-    "author_name":"mark",
-    "author_email":"markus1@mail.com"
+    "author_name":"henryFord",
+    "author_email":"GigaFord@mail.com"
 }
 ### get all users
 GET http://localhost:4000/user
+### get user by id
+POST http://localhost:4000/user/checkId
+Content-Type: application/json
+
+{
+    "userId": "6977b455b3613242e4d44fed"
+}

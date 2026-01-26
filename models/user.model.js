@@ -12,8 +12,19 @@ const userSchema = new Schema(
       required: true,
       trim: true,
     },
+    role: {
+      type: String,
+      trim: true,
+      default: "user",
+      enum: ["user", "super user"],
+      required: true,
+    },
+    videoRequests:[{
+      type: Schema.Types.ObjectId,
+      ref: "videoRequest"
+    }]
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const User = mongoose.model("User", userSchema);

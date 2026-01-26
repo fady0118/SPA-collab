@@ -27,18 +27,36 @@ const loginUser = async (req, res) => {
         return res.status(400).json({message:"name or email is missing"});
     }
     try {
-        const user = await User.findOne({author_name, author_email});
+        const user = await User.findOne({author_name, author_email})
+        .populate("videoRequests");
         if(!user){
             return res.status(400).json({message:"user doesn't exist"})
         }
-        // res.status(200).json({message:"login successful!", user});
-        res.redirect(`http://127.0.0.1:5500/project/index.html?id=${user._id}`)
+        res.status(200).json({message:"login successful!", user});
+        // res.redirect(`http://127.0.0.1:5500/project/index.html?id=${user._id}`)
     } catch (error) {
         res.status(500).json({error:error.message})
     }
 }
 
+const getUserById = async (req, res)=>{
+    try {
+        res.send(req.user)
+    } catch (error) {
+         res.status(500).json({error:error.message})
+    }
+}
+
 const getAllUsers = async (req, res)=>{
+    if(!req.user._id){
+        return res.status(403).json({message:"no user provided!"});
+    }
+    const user = await User.find({_id:req.user._id});
+    if(!user){
+        return res.status(404).json({message:"user no found!"});
+    }else if (user.role !== "super user"){
+        return res.status(401).json({message:"Unauthorized"})
+    }
     try {
         const users = await User.find({});
         if(!users){
@@ -50,4 +68,4 @@ const getAllUsers = async (req, res)=>{
     }
 }
 
-export {createUser, loginUser, getAllUsers}
+export {createUser, loginUser, getAllUsers, getUserById}
