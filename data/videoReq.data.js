@@ -92,6 +92,7 @@ const deleteVideoRequest = async (req, res) => {
 };
 
 const updateVoteForRequest = async (req, res) => {
+  console.log("updateVoteController: ", req.body);
   const { vote_type } = req.body;
   const other_type = vote_type === "ups" ? "downs" : "ups";
   try {
@@ -103,48 +104,78 @@ const updateVoteForRequest = async (req, res) => {
     // A. user hasn't voted before
     // B. user already voted and wants to remove his vote
     // C. user already voted other_type before and wants to change vote_type
+    // let newRequest;
+    // // A)
+    // if (!oldRequest.votes[vote_type].includes(req.user._id) && !oldRequest.votes[other_type].includes(req.user._id)) {
+    //   // add req.user._id to vote_type
+    //   newRequest = await VideoReq.findByIdAndUpdate(
+    //     req.params.id,
+    //     {
+    //       votes: {
+    //         [vote_type]: [...oldRequest.votes[vote_type], req.user._id],
+    //         [other_type]: oldRequest.votes[other_type],
+    //       },
+    //     },
+    //     { new: true },
+    //   );
+    // }
+    // // B)
+    // else if (oldRequest.votes[vote_type].includes(req.user._id)) {
+    //   // remove req.user._id from vote_type
+    //   newRequest = await VideoReq.findByIdAndUpdate(
+    //     req.params.id,
+    //     {
+    //       votes: {
+    //         [vote_type]: oldRequest.votes[vote_type].filter((currentId) => currentId.toString() !== req.user._id.toString()),
+    //         [other_type]: oldRequest.votes[other_type],
+    //       },
+    //     },
+    //     { new: true },
+    //   );
+    // }
+    // // C)
+    // else if (oldRequest.votes[other_type].includes(req.user._id)) {
+    //   // change req.user._id from other_type to vote_type
+    //   newRequest = await VideoReq.findByIdAndUpdate(
+    //     req.params.id,
+    //     {
+    //       votes: {
+    //         [vote_type]: [...oldRequest.votes[vote_type], req.user._id],
+    //         [other_type]: oldRequest.votes[other_type].filter((currentId) => currentId.toString() !== req.user._id.toString()),
+    //       },
+    //     },
+    //     { new: true },
+    //   );
+    // }
+
+    // mongoDb native option $addToSet, $pull
     let newRequest;
     // A)
     if (!oldRequest.votes[vote_type].includes(req.user._id) && !oldRequest.votes[other_type].includes(req.user._id)) {
-      // add req.user._id to vote_type
-      newRequest = await VideoReq.findByIdAndUpdate(
-        req.params.id,
-        {
-          votes: {
-            [vote_type]: [...oldRequest.votes[vote_type], req.user._id],
-            [other_type]: oldRequest.votes[other_type],
-          },
+      newRequest = await VideoReq.findByIdAndUpdate(req.params.id, {
+        $addToSet: {
+          [`votes.${vote_type}`]: req.user._id,
         },
-        { new: true },
-      );
+      }, {new: true});
     }
     // B)
-    else if (oldRequest.votes[vote_type].includes(req.user._id)) {
-      // remove req.user._id from vote_type
-      newRequest = await VideoReq.findByIdAndUpdate(
-        req.params.id,
-        {
-          votes: {
-            [vote_type]: oldRequest.votes[vote_type].filter((currentId) => currentId.toString() !== req.user._id.toString()),
-            [other_type]: oldRequest.votes[other_type],
-          },
+    if (oldRequest.votes[vote_type].includes(req.user._id)) {
+      newRequest = await VideoReq.findByIdAndUpdate(req.params.id, {
+        $pull: {
+          [`votes.${vote_type}`]: req.user._id,
         },
-        { new: true },
-      );
+      }, {new: true});
     }
     // C)
-    else if (oldRequest.votes[other_type].includes(req.user._id)) {
-      // change req.user._id from other_type to vote_type
-      newRequest = await VideoReq.findByIdAndUpdate(
-        req.params.id,
-        {
-          votes: {
-            [vote_type]: [...oldRequest.votes[vote_type], req.user._id],
-            [other_type]: oldRequest.votes[other_type].filter((currentId) => currentId.toString() !== req.user._id.toString()),
-          },
+    if (oldRequest.votes[other_type].includes(req.user._id)) {
+      newRequest = await VideoReq.findByIdAndUpdate(req.params.id, {
+        $pull: {
+          [`votes.${other_type}`]: req.user._id,
         },
-        { new: true },
-      );
+        $addToSet: {
+          [`votes.${vote_type}`]: req.user._id,
+        },
+      }, {new: true});
     }
     res.status(200).json({ message: "votes updated", oldRequest, newRequest });
   } catch (error) {
