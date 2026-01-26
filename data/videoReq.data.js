@@ -38,7 +38,7 @@ const getAllVideoRequests = async (req, res) => {
     if (sortBy === "New First") {
       data = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else if (sortBy === "Top Voted First") {
-      data = data.sort((a, b) => b.votes["ups"] - b.votes["downs"] - (a.votes["ups"] - a.votes["downs"]));
+      data = data.sort((a, b) => b.votes["ups"].length - b.votes["downs"].length - (a.votes["ups"].length - a.votes["downs"].length));
     }
     res.send(data);
   } catch (error) {
@@ -92,7 +92,6 @@ const deleteVideoRequest = async (req, res) => {
 };
 
 const updateVoteForRequest = async (req, res) => {
-  console.log("updateVoteController: ", req.body);
   const { vote_type } = req.body;
   const other_type = vote_type === "ups" ? "downs" : "ups";
   try {

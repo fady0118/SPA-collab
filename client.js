@@ -112,8 +112,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   async function sendVidRequest() {
     const formData = new FormData(formEl);
     formData.append("userId", state.userId);
-    console.log(formData);
-    // ?id=${state.userId||""
     const validationErrors = checkTopicFormValidity(formData);
     if (validationErrors) {
       return;
@@ -163,7 +161,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     return vidRequests;
   }
 
-  async function updateVote(vote_type, request_id, e) {
+  async function updateVote(request_id, e) {
+    const vote_type = e.target.name;
     try {
       const response = await fetch(`http://localhost:4000/video-request/vote/${request_id}`, {
         headers: { "Content-Type": "application/json" },
@@ -181,8 +180,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       const voteScore = data.newRequest.votes["ups"].length - data.newRequest.votes["downs"].length;
       voteScoreEl.textContent = voteScore;
 
-      const index = requestsList.findIndex((reqItem) => reqItem._id === data.newRequest._id);
-      requestsList[index].votes = data.newRequest.votes;
+      // const index = requestsList.findIndex((reqItem) => reqItem._id === data.newRequest._id);
+      // requestsList[index].votes = data.newRequest.votes;
     } catch (error) {
       console.log(error);
     }
@@ -224,12 +223,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const requestEl = document.createElement("div");
     requestEl.innerHTML = vidRequestTemplate;
-    requestEl.querySelector(".upvote-btn").addEventListener("click", (e) => {
-      updateVote("ups", request._id, e);
+    const voteButtons = requestEl.querySelectorAll("[class*='-btn']")
+    voteButtons.forEach(voteBtn=>{
+      voteBtn.addEventListener("click", (e) => {
+      updateVote(request._id, e);
     });
-    requestEl.querySelector(".downvote-btn").addEventListener("click", (e) => {
-      updateVote("downs", request._id, e);
-    });
+    })
+    // requestEl.querySelector(".upvote-btn").addEventListener("click", (e) => {
+    //   updateVote(request._id, e);
+    // });
+    // requestEl.querySelector(".downvote-btn").addEventListener("click", (e) => {
+    //   updateVote(request._id, e);
+    // });
     return requestEl;
   }
   // SORTING
@@ -266,6 +271,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // getVidReqs
   async function getSortedVidReqs(sortBy = "New First", searchTerm = undefined) {
+    console.log(`getSorted: ${sortBy}`)
     const searchTermQuery = searchTerm ? `&topic_title=${searchTerm}` : "";
     const response = await fetch(`http://localhost:4000/video-request?sortBy=${sortBy}${searchTermQuery}`);
     const sortedRequests = await response.json();
