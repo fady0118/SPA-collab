@@ -13,7 +13,7 @@ const VideoRequestsSchema = new Schema(
       downs: { type: [String], default: [],  },
     },
     target_level: { type: String, enum:[ "beginner", "medium", "advanced"], lowercase: true, default: "beginner" },
-    status: { type: String, default: "new" },
+    status: { type: String, enum:[ "new", "planned", "done"], default: "new" },
     video_ref: {
       link: { type: String, default: "" },
       date: { type: String, default: "" },

@@ -16,7 +16,7 @@ POST http://localhost:4000/video-request
 Content-Type: application/json
 
 {
-    "userId":"6977a890207d14c2f8e93546",
+    "userId":"6977b455b3613242e4d44fed",
     "topic_title":"SPA", 
     "topic_details":"single page app in vanilla js"
 }
@@ -45,6 +45,22 @@ Content-Type: application/json
 {
     "vote_type":"ups"
 }
+### update video request status by id
+PATCH   http://localhost:4000/video-request/status/6979038e612c0455c5380f96
+Content-Type: application/json
+
+{
+    "status":"planned",
+    "userId":"6977a7ff55b9b3aef328984a"
+}
+### Add video request Ref by id
+PATCH   http://localhost:4000/video-request/videoRef/6977bc7c350e2e3ed29d0fed
+Content-Type: application/json
+
+{
+    "link": "https://www.youtube.com/watch?v=QHdG7gy98SQ&pp=ygUEcmRyMg%3D%3D",
+    "userId":"6977a7ff55b9b3aef328984a"
+}
 
 ### USERS
 ### sign up
@@ -55,8 +71,6 @@ Content-Type: application/json
     "author_name":"mark",
     "author_email":"markus1@mail.com"
 }
-
-
 ### login
 POST  http://localhost:4000/user/login 
 Content-Type: application/json

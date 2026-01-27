@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./models/mongo.config.js";
-import { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest, updateVoteForRequest } from "./data/videoReq.data.js";
+import { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest, updateVoteForRequest, addVideoRef, updateVideoStatus } from "./data/videoReq.data.js";
 import multer from "multer";
 import { createUser, getAllUsers, getUserById, loginUser } from "./data/user.data.js";
 import authMiddleware from "./middleware/authMiddleware.js";
@@ -29,6 +29,8 @@ app.get("/video-request/:id", getVideoRequestById);
 app.post("/video-request", upload.none(), authMiddleware, createRequest);
 // app.patch("/video-request/:id", updateVideoRequest);
 app.patch("/video-request/vote/:id", authMiddleware, updateVoteForRequest);
+app.patch("/video-request/videoRef/:id", authMiddleware, addVideoRef);
+app.patch("/video-request/status/:id", authMiddleware, updateVideoStatus);
 app.delete("/video-request/:id", authMiddleware, deleteVideoRequest);
 
 // user routes

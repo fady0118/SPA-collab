@@ -185,5 +185,47 @@ const updateVoteForRequest = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const updateVideoStatus = async (req, res) => {
+  if(req.user.role!=="super user"){
+    return res.status(401).json({
+      message:"Unauthorized"
+    })
+  }
+  const {status} = req.body;
+  try {
+    const updatedVideoStatus = await VideoReq.findByIdAndUpdate(req.params.id, {
+      status
+    }, {new:true, runValidators: true })
+    if(!updatedVideoStatus){
+      throw new Error("video-request not found")
+    }
+    res.status(200).json(updatedVideoStatus);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
 
-export { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest, updateVoteForRequest };
+const addVideoRef = async (req, res) => {
+  if(req.user.role!=="super user"){
+    return res.status(401).json({
+      message:"Unauthorized"
+    })
+  }
+  const {link} = req.body;
+  try {
+    const updatedvideoRef = await VideoReq.findByIdAndUpdate(req.params.id, {
+      video_ref:{
+        link, 
+        date: `${new Date().toLocaleTimeString()} ${new Date().toDateString()}`
+      }
+    }, {new:true})
+    if(!updatedvideoRef){
+      return res.status(404).json("request not found");
+    }
+    res.status(200).json({updatedvideoRef})
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+export { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest, updateVoteForRequest, updateVideoStatus, addVideoRef };

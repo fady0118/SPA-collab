@@ -34,6 +34,9 @@
             color: inherit; 
             opacity: 0.5; 
         }
+        #clearSearchBox:hover{
+           background-color: rgba(var(--bs-black-rgb),0.2);
+        }
     </style>
 </head>
 <body class="bg-dark text-light">
@@ -91,7 +94,7 @@
         </div>
         <div id="app_container" class="app-Content d-none">
             <div id="welcomeDashboard"></div>
-            <form id="requestForm" novalidate>
+            <form id="requestForm" class="mt-4" novalidate>
                 <div class="row mb-3">
                     <div class="col-md">
                         <div class="form-group">
@@ -161,8 +164,8 @@
                     <input class="form-control mr-sm-2 bg-transparent text-white" id="searchBox"
                         type="search" placeholder="Search" aria-label="Search">
                     <button type="button" id="clearSearchBox"
-                        class="btn btn-sm clear-btn fs-6 text-white position-absolute top-50 end-0 translate-middle-y"
-                        aria-label="Clear search">🗙</button>
+                        class="btn btn-sm clear-btn px-2 fs-6 text-white position-absolute top-50 end-0 translate-middle-y"
+                        aria-label="Clear search">×</button>
                 </div>
             </div>
             <div id="listOfRequests" class="mt-4"></div>

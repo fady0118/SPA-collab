@@ -231,8 +231,23 @@ document.addEventListener("DOMContentLoaded", async function () {
   function getSingleVidReq(request, role="user") {
     let date = new Date(request.createdAt);
     const dateFormat = `${date.toLocaleDateString("en-US", { weekday: "short" })} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
+    const statusArray = ["new", "planned", "done"];
     const vidRequestTemplate = `
     <div class="card mb-3 flex-fill">
+              ${role==="super user"?`
+                <div id="super-user-header" class="card-header d-flex justify-content-between">
+                    <select class="reqStatusList text-capitalize">
+                      ${statusArray.map(stat=>{
+                        return `
+                          <option class="text-capitalize" value="${stat}" ${stat===request.status?'selected':""}>${stat}</option>
+                        `
+                      })}
+                    </select>
+
+
+                    <button class="deleteBtn btn btn-danger">Delete</button>
+                </div>`:''
+              }
                 <div class="card-body d-flex justify-content-between flex-row">
                     <div class="d-flex flex-column">
                         <h3>${request.topic_title}</h3>
@@ -247,19 +262,18 @@ document.addEventListener("DOMContentLoaded", async function () {
                           <h3 class="voteScore">${request.votes["ups"].length - request.votes["downs"].length}</h3>
                           <a class="btn downvote-btn ${request.votes["downs"].includes(state.userId) ? "voteBtnStyle" : ""}" name="downs">🢃</a>
                       </div>
-                      ${role==="super user"?`<span role="button" class="deleteBtn ms-3 py-4">❌</span>`:''}
                     </div>
                 </div>
                 <div
                     class="card-footer d-flex flex-row justify-content-between">
                     <div>
-                        <span class="text-info">${request.status}</span>
+                        <span class="request-status text-info">${request.status}</span>
                         &bullet; added by <strong>${request.author.author_name}</strong> on
                         <strong>${dateFormat}</strong>
                     </div>
                     <div
                         class="d-flex justify-content-center flex-column 408ml-auto mr-2">
-                        <div class="badge badge-success">
+                        <div class="badge text-bg-info text-dark">
                             ${request.target_level}
                         </div>
                     </div>
@@ -283,6 +297,53 @@ document.addEventListener("DOMContentLoaded", async function () {
         deleteRequest(request)
       })
     }
+    const reqStatusListEl = requestEl.querySelector("[class^='reqStatusList']")
+    reqStatusListEl.addEventListener("change", (e)=>{
+      // console.log('x',e.target.value)
+      const newStatus = e.target.value;
+      const statusChangePopup = document.createElement('div');
+      statusChangePopup.className ='card text-center position-absolute top-50 start-50 translate-middle';
+      statusChangePopup.innerHTML = `<div class="card-body">
+        <p class="text-capitalize">you are changing <strong class="text-primary">${request.topic_title}</strong> status to <strong class="text-primary">${e.target.value}</strong></p>
+        <div>
+          <button type="button" class="popup-confirm btn btn-outline-success">Confirm</button>
+          <button type="button" class="popup-cancel btn btn-outline-secondary">Cancel</button>
+        </div>
+        </div>
+        `
+      document.getElementById("app_container").appendChild(statusChangePopup);
+      const popupBtns = statusChangePopup.querySelectorAll("[class^='popup']");
+      
+      async function popupHandle(e, newStatus){
+        const choice = e.target.innerHTML;
+        let updatedStatusRequest;
+        if(choice==="Confirm"){
+          const response = await fetch(`http://localhost:4000/video-request/status/${request._id}`,{   
+            headers:{"Content-Type":"application/json"},
+            method:"PATCH",
+            body: JSON.stringify({
+              userId: state.userId,
+              status:newStatus
+            })
+          })
+          statusChangePopup.remove();
+          updatedStatusRequest = await response.json();
+        }
+        if(!updatedStatusRequest){
+          alert("couldn't update status");
+          return;
+        }
+        const reqStatus = requestEl.querySelector("[class^='request-status']");
+        reqStatus.textContent = updatedStatusRequest.status;
+        if(updatedStatusRequest.status==="done"){
+          // show the input field to add the video ref link
+        }
+      }
+      popupBtns.forEach(btn=>{btn.addEventListener("click",async (e)=>{
+          await popupHandle(e, newStatus);
+      })})
+    })
+
     // requestEl.querySelector(".upvote-btn").addEventListener("click", (e) => {
     //   updateVote(request._id, e);
     // });
