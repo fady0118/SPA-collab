@@ -30,9 +30,13 @@
             color: transparent;
             -webkit-text-stroke: 1px black; 
         }
+        #searchBox::placeholder, textarea::placeholder {
+            color: inherit; 
+            opacity: 0.5; 
+        }
     </style>
 </head>
-<body>
+<body class="bg-dark text-light">
     <div class="container my-5 d-flex flex-column justify-content-center">
         <div id="loginFormContainer"
             class="login-Form mt-5 col-md-4 offset-md-4 ">
@@ -85,7 +89,8 @@
                 </p>
             </form>
         </div>
-        <div id="app_container" class="app-Content my-5 d-none">
+        <div id="app_container" class="app-Content d-none">
+            <div id="welcomeDashboard"></div>
             <form id="requestForm" novalidate>
                 <div class="row mb-3">
                     <div class="col-md">
@@ -152,15 +157,15 @@
                     <button type="button" class="btn btn-primary sort_by"
                         value="Top Voted First">Top Voted First</button>
                 </div>
-                <div class="position-relative">
-                    <input class="form-control mr-sm-2" id="searchBox"
+                <div class="position-relative d-flex align-items-center">
+                    <input class="form-control mr-sm-2 bg-transparent text-white" id="searchBox"
                         type="search" placeholder="Search" aria-label="Search">
                     <button type="button" id="clearSearchBox"
-                        class="btn btn-sm clear-btn position-absolute top-50 end-0 translate-middle-y"
-                        aria-label="Clear search">&times;</button>
+                        class="btn btn-sm clear-btn fs-6 text-white position-absolute top-50 end-0 translate-middle-y"
+                        aria-label="Clear search">🗙</button>
                 </div>
             </div>
-            <div id="listOfRequests"></div>
+            <div id="listOfRequests" class="mt-4"></div>
         </div>
     </div>
     <script type="module" src="./client.js"></script>

@@ -1,21 +1,19 @@
 import { VideoReq } from "../models/videoReq.model.js";
 // req.user comes from th middleware & req.body from the frontend
 const createRequest = async (req, res) => {
-  const { _id } = req.user;
-  console.log(_id)
   const { topic_title, topic_details, expected_result, target_level } = req.body;
   try {
     const video_req = await VideoReq.create({
-      author:_id,
+      author:req.user._id,
       topic_title,
       topic_details,
       expected_result,
       target_level: target_level ?? "beginner",
     });
-
     if (!video_req) {
       return res.status(400).json({ message: "error creating video-request" });
     }
+    await video_req.populate("author");
     res.status(201).json(video_req);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -80,6 +78,12 @@ const updateVideoRequest = async (req, res) => {
 };
 
 const deleteVideoRequest = async (req, res) => {
+  // only the super user can delete requests
+  if(req.user.role !== "super user"){
+    return res.status(401).json({
+      message:"Unauthorized"
+    })
+  }
   try {
     const deletedRequest = await VideoReq.findByIdAndDelete(req.params.id);
     if (!deletedRequest) {

@@ -27,9 +27,10 @@ app.get("/", (req, res) => {
 app.get("/video-request", getAllVideoRequests);
 app.get("/video-request/:id", getVideoRequestById);
 app.post("/video-request", upload.none(), authMiddleware, createRequest);
-app.patch("/video-request/:id", updateVideoRequest);
+// app.patch("/video-request/:id", updateVideoRequest);
 app.patch("/video-request/vote/:id", authMiddleware, updateVoteForRequest);
-app.delete("/video-request/:id", deleteVideoRequest);
+app.delete("/video-request/:id", authMiddleware, deleteVideoRequest);
+
 // user routes
 app.get("/user/", authMiddleware, getAllUsers)
 app.post("/user/checkId", authMiddleware, getUserById)

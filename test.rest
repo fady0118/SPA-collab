@@ -31,7 +31,12 @@ Content-Type: application/json
     "target_level": "beginner"
 }
 ### delete video request by id
-DELETE  http://localhost:4000/video-request/697362f21da3a72bc74f342d
+DELETE  http://localhost:4000/video-request/69789a41b795bea3a5444c3b
+Content-Type: application/json
+
+{
+    "userId":"6977a7ff55b9b3aef328984a"
+}
 
 ### update video request vote by id
 PATCH   http://localhost:4000/video-request/vote/69766ea627d6d5c3cd2a8ec4

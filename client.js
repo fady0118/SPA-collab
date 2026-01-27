@@ -16,12 +16,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     sortBy: "New First",
     searchTerm: undefined,
     userId: "",
+    user:"",
   };
   async function checkUserId(userId) {
     return await fetch("http://localhost:4000/user/checkId", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: state.userId }),
+      body: JSON.stringify({ userId }),
     });
   }
   if (window.location.search) {
@@ -36,34 +37,47 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
     const user = await response.json();
-    console.log(user);
-    if (user.role === "super user") {
-      await displayDashboard("admin");
-    } else {
-      await displayDashboard("user");
-    }
+    state.user = user;
+    await displayDashboard(state.user);
+
     document.getElementById("loginFormContainer").classList.add("d-none");
     document.getElementById("app_container").classList.remove("d-none");
   }
   // display requests
-  async function displayDashboard(role) {
-    if (role === "admin") {
-      // display admin stuff
-      document.getElementById("requestForm").classList.add("d-none");
-    } else if (role === "user") {
-      // display user stuff
-
+  async function displayDashboard(user) {
+    if(user===""){
+      return
     }
-      // display admin-user common stuff
+    // display admin-user common stuff
     requestsList = await getRequests();
-    console.log(requestsList)
-    renderList(requestsList);
+    renderList(requestsList, user.role);
+    const welcomeDashboard = document.getElementById("welcomeDashboard");
+
+    // display admin stuff
+    if (user.role === "super user") {
+      welcomeDashboard.innerHTML = `
+      <h4 class="p-3 text-info-emphasis bg-info-subtle border border-info-subtle rounded-3">
+        <strong>Welcome Boss</strong>
+      </h4>
+      `;
+
+      document.getElementById("requestForm").classList.add("d-none");
+    } 
+    // display user stuff
+    else if (user.role === "user") {
+      welcomeDashboard.innerHTML = `
+      <h4 class="p-3 text-info-emphasis bg-info-subtle border border-info-subtle rounded-3">
+        Welcome <strong>${user.author_name}</strong>
+      </h4>
+        `;
+    }
+    
   }
   // render requests
-  function renderList(list) {
+  function renderList(list, role="user") {
     requestsContainer.innerHTML = "";
     list.forEach((request) => {
-      const vidRequestEl = getSingleVidReq(request);
+      const vidRequestEl = getSingleVidReq(request, role);
       requestsContainer.appendChild(vidRequestEl);
     });
   }
@@ -148,8 +162,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         body: formData,
       });
       const data = await response.json();
+      console.log(data)
       requestsList.push(data);
-      const vidRequestEl = getSingleVidReq(data);
+      const vidRequestEl = getSingleVidReq(data, state.user.role);
       requestsContainer.prepend(vidRequestEl);
     } catch (error) {
       console.log(error);
@@ -213,10 +228,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   }
 
-  function getSingleVidReq(request) {
+  function getSingleVidReq(request, role="user") {
     let date = new Date(request.createdAt);
     const dateFormat = `${date.toLocaleDateString("en-US", { weekday: "short" })} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
-    const vidRequestTemplate = `<div class="card mb-3">
+    const vidRequestTemplate = `
+    <div class="card mb-3 flex-fill">
                 <div class="card-body d-flex justify-content-between flex-row">
                     <div class="d-flex flex-column">
                         <h3>${request.topic_title}</h3>
@@ -225,17 +241,20 @@ document.addEventListener("DOMContentLoaded", async function () {
                             ${request.expected_result ? `<strong>Expected results:</strong> ${request.expected_result}` : ""}
                         </p>
                     </div>
-                    <div class="d-flex flex-column text-center">
-                        <a class="btn upvote-btn ${request.votes["ups"].includes(state.userId) ? "voteBtnStyle" : ""}" name="ups">🢁</a>
-                        <h3 class="voteScore">${request.votes["ups"].length - request.votes["downs"].length}</h3>
-                        <a class="btn downvote-btn ${request.votes["downs"].includes(state.userId) ? "voteBtnStyle" : ""}" name="downs">🢃</a>
+                    <div class="d-flex align-items-center">
+                      <div class="d-flex flex-column text-center">
+                          <a class="btn upvote-btn ${request.votes["ups"].includes(state.userId) ? "voteBtnStyle" : ""}" name="ups">🢁</a>
+                          <h3 class="voteScore">${request.votes["ups"].length - request.votes["downs"].length}</h3>
+                          <a class="btn downvote-btn ${request.votes["downs"].includes(state.userId) ? "voteBtnStyle" : ""}" name="downs">🢃</a>
+                      </div>
+                      ${role==="super user"?`<span role="button" class="deleteBtn ms-3 py-4">❌</span>`:''}
                     </div>
                 </div>
                 <div
                     class="card-footer d-flex flex-row justify-content-between">
                     <div>
                         <span class="text-info">${request.status}</span>
-                        &bullet; added by <strong>${request.author_name}</strong> on
+                        &bullet; added by <strong>${request.author.author_name}</strong> on
                         <strong>${dateFormat}</strong>
                     </div>
                     <div
@@ -245,9 +264,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                         </div>
                     </div>
                 </div>
-            </div>`;
+            </div>
+            
+            `;
 
     const requestEl = document.createElement("div");
+    requestEl.className+=" video-request d-flex flex-row align-items-center";
     requestEl.innerHTML = vidRequestTemplate;
     const voteButtons = requestEl.querySelectorAll("[class*='-btn']");
     voteButtons.forEach((voteBtn) => {
@@ -255,6 +277,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         updateVote(request._id, e);
       });
     });
+    const deleteBtn = requestEl.querySelector("[class^='deleteBtn']");
+    if(deleteBtn){
+      deleteBtn.addEventListener("click", (e)=>{
+        deleteRequest(request)
+      })
+    }
     // requestEl.querySelector(".upvote-btn").addEventListener("click", (e) => {
     //   updateVote(request._id, e);
     // });
@@ -262,6 +290,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     //   updateVote(request._id, e);
     // });
     return requestEl;
+  }
+  // DELETE
+  async function deleteRequest(request){
+    const response = await fetch(`http://localhost:4000/video-request/${request._id}`, {
+      method:"DELETE",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        userId: state.userId,
+      })
+    });
+    const data = await response.json();
+    await displayDashboard(state.user);
   }
   // SORTING
   const sortingElms = document.querySelectorAll(".sort_by");
@@ -297,11 +337,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // getVidReqs
   async function getSortedVidReqs(sortBy = "New First", searchTerm = undefined) {
-    console.log(`getSorted: ${sortBy}`);
     const searchTermQuery = searchTerm ? `&topic_title=${searchTerm}` : "";
     const response = await fetch(`http://localhost:4000/video-request?sortBy=${sortBy}${searchTermQuery}`);
     const sortedRequests = await response.json();
-    renderList(sortedRequests);
+    renderList(sortedRequests,state.user.role);
   }
   // debounce
   function debounce(callback, delay = 300) {
