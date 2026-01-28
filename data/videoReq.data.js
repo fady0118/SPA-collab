@@ -222,7 +222,7 @@ const addVideoRef = async (req, res) => {
     if(!updatedvideoRef){
       return res.status(404).json("request not found");
     }
-    res.status(200).json({updatedvideoRef})
+    res.status(200).json({video_link:updatedvideoRef.video_ref.link})
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

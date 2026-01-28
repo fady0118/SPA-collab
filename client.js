@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                       })}
                     </select>
                     <div class="d-flex justify-content-center w-75">
-                      <div class="videoRefInput d-none w-50 border border-dark rounded border-opacity-50 shadow">
+                      <div class="videoRefInput d-none w-50 border border-dark rounded border-opacity-50 shadow" style="transition: all ease 0.25s;">
                         <div class="position-relative d-flex align-items-center">
                           <input class="form-control mr-sm-2 bg-transparent"
                               type="text" value="${request.video_ref.link||''}" placeholder="Add Video Link" aria-label="Search">
@@ -252,20 +252,26 @@ document.addEventListener("DOMContentLoaded", async function () {
                               class="d-none bg-dark btn btn-sm clear-btn px-2 ms-2 fs-6 position-absolute top-50 end-0 translate-middle-y"
                               aria-label="Clear search">×</button>
                         </div>
-                        </div>
-                      <button id="saveVideoRef" class="btn btn-light ms-1">Save</button>
+                      </div>
+                      <button id="saveVideoRef" class="d-none btn btn-light ms-1">Save</button>
                     </div>
                     <button class="deleteBtn btn btn-danger">Delete</button>
                 </div>`:''
               }
-                <div class="card-body d-flex justify-content-between flex-row">
-                    <div class="d-flex flex-column">
+                <div class="card-body d-flex flex-row justify-content-between align-items-center">
+                    <div class="d-flex flex-column" style="width:35%">
                         <h3>${request.topic_title}</h3>
                         <p class="text-muted mb-2">${request.topic_details}</p>
                         <p class="mb-0 text-muted">
                             ${request.expected_result ? `<strong>Expected results:</strong> ${request.expected_result}` : ""}
                         </p>
                     </div>
+                    ${request.video_ref.link?`
+                        <div id="video_thumbnail" class="bg-light rounded" style="aspect-ratio: 16/9;width: 15%;">
+                          <a class="d-block w-100 h-100 " href="${request.video_ref.link}" target="_blank"></a>
+                        </div>`
+                      :''
+                    }
                     <div class="d-flex align-items-center">
                       <div class="d-flex flex-column text-center">
                           <a class="btn upvote-btn ${request.votes["ups"].includes(state.userId) ? "voteBtnStyle" : ""}" name="ups">🢁</a>
@@ -292,10 +298,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             
             `;
 
+    // populate requestEl with the template
     const requestEl = document.createElement("div");
     requestEl.className+="video-request d-flex flex-row align-items-center";
     requestEl.innerHTML = vidRequestTemplate;
-    
+
+    // add event listeners to vote buttons
     const voteButtons = requestEl.querySelectorAll("[class^='btn upvote-btn']");
     voteButtons.forEach((voteBtn) => {
       voteBtn.addEventListener("click", (e) => {
@@ -303,13 +311,23 @@ document.addEventListener("DOMContentLoaded", async function () {
       });
     });
 
+    // fetch and add thumbnail to requests with video links
+    const videoMatch = request.video_ref.link.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/);
+    if(videoMatch!==null){
+      const video_Id = videoMatch[1];
+      const thumbnail = `https://img.youtube.com/vi/${video_Id}/hqdefault.jpg`;
+      requestEl.querySelector("#video_thumbnail").style.backgroundImage =`url(${thumbnail})`;
+      requestEl.querySelector("#video_thumbnail").style.backgroundSize = "cover";
+      requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
+    }
+    
     // admin header elements
     if(state.user.role==="super user"){
       // videoRef Input on initial request render 
       if (request.status === "done" && state.user.role==="super user") {
         // show the input field to add the video ref link
-        const videoRefEl = requestEl.querySelector("[class^='videoRefInput']");
-        videoRefEl.classList.remove("d-none");
+        requestEl.querySelector("[class^='videoRefInput']").classList.remove("d-none");
+        requestEl.querySelector("#saveVideoRef").classList.remove("d-none");
       }
       // delete button
       const deleteBtn = requestEl.querySelector("[class^='deleteBtn']");
@@ -319,16 +337,20 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       // status droplist
       const reqStatusListEl = requestEl.querySelector("[class^='reqStatusList']")
+      let oldStatus;
+      reqStatusListEl.addEventListener("focus", (e)=>{
+        oldStatus = e.target.value;
+      })
       reqStatusListEl.addEventListener("change", (e)=>{
         const newStatus = e.target.value;
         // confirm status change popup
         const statusChangePopup = document.createElement('div');
-        statusChangePopup.className ='card text-center position-absolute top-50 start-50 translate-middle';
+        statusChangePopup.className ='card text-center position-absolute top-50 start-50 translate-middle z-1 p-3';
         statusChangePopup.innerHTML = `<div class="card-body">
           <p class="text-capitalize">you are changing <strong class="text-primary">${request.topic_title}</strong> status to <strong class="text-primary">${e.target.value}</strong></p>
           <div>
-            <button type="button" class="popup-confirm btn btn-outline-success">Confirm</button>
-            <button type="button" class="popup-cancel btn btn-outline-secondary">Cancel</button>
+            <button type="button" class="popup-confirm btn btn-outline-success mx-1">Confirm</button>
+            <button type="button" class="popup-cancel btn btn-outline-secondary mx-1">Cancel</button>
           </div>
           </div>
           `
@@ -348,23 +370,23 @@ document.addEventListener("DOMContentLoaded", async function () {
               })
             })
             updatedStatusRequest = await response.json();
+            
+            // we need to clear the video link if the status is changed from done to planned/new
+            if(newStatus!=="done"){
+              await updateVideoRefLink("")
+            }
+            // update using showdashboard which fetches the data and calls renderlist
+            await displayDashboard(state.user)
+            document.querySelector(".filter_by[value='All']").click();
+          } else {
+            // reset dropList
+            requestEl.querySelector("select.reqStatusList").value = oldStatus; // find old value
+            
           }
           statusChangePopup.remove();
           if(!updatedStatusRequest){
             return;
           }
-          const reqStatus = requestEl.querySelector("[class^='request-status']");
-          reqStatus.textContent = updatedStatusRequest.status;
-
-          // videoRef Input after status change
-          const videoRefEl = requestEl.querySelector("[class^='videoRefInput']");
-          if(updatedStatusRequest.status==="done"){
-            // show the input field to add the video ref link
-            videoRefEl.classList.remove("d-none")
-          } else{
-            videoRefEl.classList.add("d-none")
-          }
-        
         }
         popupBtns.forEach(btn=>{btn.addEventListener("click",async (e)=>{
             await popupHandle(e, newStatus);
@@ -373,29 +395,50 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       // video reference link field
       const videoRefEl = requestEl.querySelector("[class^='videoRefInput']");
+      // expand on focusIN
       videoRefEl.parentElement.addEventListener("focusin", ()=>{
         videoRefEl.classList.add("w-75")
         videoRefEl.classList.remove("w-50")
         const videoClearBtn = videoRefEl.querySelector('#videoRefClear');
         videoClearBtn.classList.remove("d-none");
       })
+      // collapse on focusOUT
       videoRefEl.parentElement.addEventListener("focusout", ()=>{
         videoRefEl.classList.remove("w-75")
         videoRefEl.classList.add("w-50")
         videoRefEl.querySelector('#videoRefClear').classList.add("d-none")
       }) 
+      // clear input using clear button
       videoRefEl.querySelector('#videoRefClear').addEventListener("click", ()=>{
         videoRefEl.querySelector("input[type='text']").value="";
       })
-      // video reference link save button
+      // video reference link Save button
       const linkSaveBtn = videoRefEl.parentElement.querySelector("#saveVideoRef");
-      linkSaveBtn.addEventListener("click", async ()=>{
-        const videoRefValue = videoRefEl.querySelector("input[type='text']").value;
-        await fetch(`http://localhost:4000/video-request/videoRef/${request._id}`, {
+      
+      // update video link function
+      async function updateVideoRefLink(videoRefValue){
+        const response = await fetch(`http://localhost:4000/video-request/videoRef/${request._id}`, {
           headers:{"Content-Type":"application/json"},
           method:"PATCH",
           body:JSON.stringify({userId:state.userId, link:videoRefValue})
         })
+        return await response.json();
+      }
+      linkSaveBtn.addEventListener("click", async ()=>{
+
+        const videoRefValue = videoRefEl.querySelector("input[type='text']").value;
+        const videoRefLinkValue = updateVideoRefLink(videoRefValue);
+
+        // update video link and thumbnail
+        const video_Id = videoRefLinkValue.video_link.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/)[1];
+        const thumbnail = `https://img.youtube.com/vi/${video_Id}/hqdefault.jpg`;
+        requestEl.querySelector("#video_thumbnail>a").setAttribute("href",videoRefLinkValue.video_link)
+        requestEl.querySelector("#video_thumbnail").style.backgroundImage =`url(${thumbnail})`;
+        requestEl.querySelector("#video_thumbnail").style.backgroundSize = "cover";
+        requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
+        
+        // update requestsList
+        requestsList = await getRequests();
       })
     }
     return requestEl;
@@ -416,7 +459,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // SORTING
   const sortingElms = document.querySelectorAll(".sort_by");
   const searchElm = document.getElementById("searchBox");
-
+  const filterElms = document.querySelectorAll(".filter_by");
   sortingElms.forEach((elm) => {
     elm.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -443,6 +486,25 @@ document.addEventListener("DOMContentLoaded", async function () {
     searchElm.value = "";
     state.searchTerm = undefined;
     debounceSearch(state.sortBy, state.searchTerm);
+  });
+  // FILTER
+  filterElms.forEach((elm) => {
+    elm.addEventListener("click", async (e) => {
+      // update requestsList
+      requestsList = await getRequests();
+      // filtering and rendering
+      let filteredList;
+      if (e.target.value.toLowerCase() === "all") {
+        filteredList = requestsList;
+      } else {
+        filteredList = requestsList.filter((request) => request.status.toLowerCase() === e.target.value.toLowerCase());
+      }
+      renderList(filteredList, state.user.role);
+      // styling
+      filterElms.forEach((elm) => {
+        elm.classList.remove("active");});
+      e.target.classList.add("active");
+    });
   });
 
   // getVidReqs
