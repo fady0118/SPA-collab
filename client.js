@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.log(error);
     }
   }
-
+  // create video request element with all its functionality
   function getSingleVidReq(request, role="user") {
     let date = new Date(request.createdAt);
     const dateFormat = `${date.toLocaleDateString("en-US", { weekday: "short" })} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
@@ -243,8 +243,18 @@ document.addEventListener("DOMContentLoaded", async function () {
                         `
                       })}
                     </select>
-
-
+                    <div class="d-flex justify-content-center w-75">
+                      <div class="videoRefInput d-none w-50 border border-dark rounded border-opacity-50 shadow">
+                        <div class="position-relative d-flex align-items-center">
+                          <input class="form-control mr-sm-2 bg-transparent"
+                              type="text" value="${request.video_ref.link||''}" placeholder="Add Video Link" aria-label="Search">
+                          <button type="button" id="videoRefClear"
+                              class="d-none bg-dark btn btn-sm clear-btn px-2 ms-2 fs-6 position-absolute top-50 end-0 translate-middle-y"
+                              aria-label="Clear search">×</button>
+                        </div>
+                        </div>
+                      <button id="saveVideoRef" class="btn btn-light ms-1">Save</button>
+                    </div>
                     <button class="deleteBtn btn btn-danger">Delete</button>
                 </div>`:''
               }
@@ -283,75 +293,114 @@ document.addEventListener("DOMContentLoaded", async function () {
             `;
 
     const requestEl = document.createElement("div");
-    requestEl.className+=" video-request d-flex flex-row align-items-center";
+    requestEl.className+="video-request d-flex flex-row align-items-center";
     requestEl.innerHTML = vidRequestTemplate;
-    const voteButtons = requestEl.querySelectorAll("[class*='-btn']");
+    
+    const voteButtons = requestEl.querySelectorAll("[class^='btn upvote-btn']");
     voteButtons.forEach((voteBtn) => {
       voteBtn.addEventListener("click", (e) => {
         updateVote(request._id, e);
       });
     });
-    const deleteBtn = requestEl.querySelector("[class^='deleteBtn']");
-    if(deleteBtn){
+
+    // admin header elements
+    if(state.user.role==="super user"){
+      // videoRef Input on initial request render 
+      if (request.status === "done" && state.user.role==="super user") {
+        // show the input field to add the video ref link
+        const videoRefEl = requestEl.querySelector("[class^='videoRefInput']");
+        videoRefEl.classList.remove("d-none");
+      }
+      // delete button
+      const deleteBtn = requestEl.querySelector("[class^='deleteBtn']");
       deleteBtn.addEventListener("click", (e)=>{
-        deleteRequest(request)
+          deleteRequest(request)
+      })
+
+      // status droplist
+      const reqStatusListEl = requestEl.querySelector("[class^='reqStatusList']")
+      reqStatusListEl.addEventListener("change", (e)=>{
+        const newStatus = e.target.value;
+        // confirm status change popup
+        const statusChangePopup = document.createElement('div');
+        statusChangePopup.className ='card text-center position-absolute top-50 start-50 translate-middle';
+        statusChangePopup.innerHTML = `<div class="card-body">
+          <p class="text-capitalize">you are changing <strong class="text-primary">${request.topic_title}</strong> status to <strong class="text-primary">${e.target.value}</strong></p>
+          <div>
+            <button type="button" class="popup-confirm btn btn-outline-success">Confirm</button>
+            <button type="button" class="popup-cancel btn btn-outline-secondary">Cancel</button>
+          </div>
+          </div>
+          `
+        document.getElementById("app_container").appendChild(statusChangePopup);
+        const popupBtns = statusChangePopup.querySelectorAll("[class^='popup']");
+      
+        async function popupHandle(e, newStatus){
+          const choice = e.target.innerHTML;
+          let updatedStatusRequest;
+          if(choice==="Confirm"){
+            const response = await fetch(`http://localhost:4000/video-request/status/${request._id}`,{   
+              headers:{"Content-Type":"application/json"},
+              method:"PATCH",
+              body: JSON.stringify({
+                userId: state.userId,
+                status:newStatus
+              })
+            })
+            updatedStatusRequest = await response.json();
+          }
+          statusChangePopup.remove();
+          if(!updatedStatusRequest){
+            return;
+          }
+          const reqStatus = requestEl.querySelector("[class^='request-status']");
+          reqStatus.textContent = updatedStatusRequest.status;
+
+          // videoRef Input after status change
+          const videoRefEl = requestEl.querySelector("[class^='videoRefInput']");
+          if(updatedStatusRequest.status==="done"){
+            // show the input field to add the video ref link
+            videoRefEl.classList.remove("d-none")
+          } else{
+            videoRefEl.classList.add("d-none")
+          }
+        
+        }
+        popupBtns.forEach(btn=>{btn.addEventListener("click",async (e)=>{
+            await popupHandle(e, newStatus);
+        })})
+      }) 
+
+      // video reference link field
+      const videoRefEl = requestEl.querySelector("[class^='videoRefInput']");
+      videoRefEl.parentElement.addEventListener("focusin", ()=>{
+        videoRefEl.classList.add("w-75")
+        videoRefEl.classList.remove("w-50")
+        const videoClearBtn = videoRefEl.querySelector('#videoRefClear');
+        videoClearBtn.classList.remove("d-none");
+      })
+      videoRefEl.parentElement.addEventListener("focusout", ()=>{
+        videoRefEl.classList.remove("w-75")
+        videoRefEl.classList.add("w-50")
+        videoRefEl.querySelector('#videoRefClear').classList.add("d-none")
+      }) 
+      videoRefEl.querySelector('#videoRefClear').addEventListener("click", ()=>{
+        videoRefEl.querySelector("input[type='text']").value="";
+      })
+      // video reference link save button
+      const linkSaveBtn = videoRefEl.parentElement.querySelector("#saveVideoRef");
+      linkSaveBtn.addEventListener("click", async ()=>{
+        const videoRefValue = videoRefEl.querySelector("input[type='text']").value;
+        await fetch(`http://localhost:4000/video-request/videoRef/${request._id}`, {
+          headers:{"Content-Type":"application/json"},
+          method:"PATCH",
+          body:JSON.stringify({userId:state.userId, link:videoRefValue})
+        })
       })
     }
-    const reqStatusListEl = requestEl.querySelector("[class^='reqStatusList']")
-    reqStatusListEl.addEventListener("change", (e)=>{
-      // console.log('x',e.target.value)
-      const newStatus = e.target.value;
-      const statusChangePopup = document.createElement('div');
-      statusChangePopup.className ='card text-center position-absolute top-50 start-50 translate-middle';
-      statusChangePopup.innerHTML = `<div class="card-body">
-        <p class="text-capitalize">you are changing <strong class="text-primary">${request.topic_title}</strong> status to <strong class="text-primary">${e.target.value}</strong></p>
-        <div>
-          <button type="button" class="popup-confirm btn btn-outline-success">Confirm</button>
-          <button type="button" class="popup-cancel btn btn-outline-secondary">Cancel</button>
-        </div>
-        </div>
-        `
-      document.getElementById("app_container").appendChild(statusChangePopup);
-      const popupBtns = statusChangePopup.querySelectorAll("[class^='popup']");
-      
-      async function popupHandle(e, newStatus){
-        const choice = e.target.innerHTML;
-        let updatedStatusRequest;
-        if(choice==="Confirm"){
-          const response = await fetch(`http://localhost:4000/video-request/status/${request._id}`,{   
-            headers:{"Content-Type":"application/json"},
-            method:"PATCH",
-            body: JSON.stringify({
-              userId: state.userId,
-              status:newStatus
-            })
-          })
-          statusChangePopup.remove();
-          updatedStatusRequest = await response.json();
-        }
-        if(!updatedStatusRequest){
-          alert("couldn't update status");
-          return;
-        }
-        const reqStatus = requestEl.querySelector("[class^='request-status']");
-        reqStatus.textContent = updatedStatusRequest.status;
-        if(updatedStatusRequest.status==="done"){
-          // show the input field to add the video ref link
-        }
-      }
-      popupBtns.forEach(btn=>{btn.addEventListener("click",async (e)=>{
-          await popupHandle(e, newStatus);
-      })})
-    })
-
-    // requestEl.querySelector(".upvote-btn").addEventListener("click", (e) => {
-    //   updateVote(request._id, e);
-    // });
-    // requestEl.querySelector(".downvote-btn").addEventListener("click", (e) => {
-    //   updateVote(request._id, e);
-    // });
     return requestEl;
   }
+
   // DELETE
   async function deleteRequest(request){
     const response = await fetch(`http://localhost:4000/video-request/${request._id}`, {
@@ -379,17 +428,17 @@ document.addEventListener("DOMContentLoaded", async function () {
       e.target.classList.add("active");
     });
   });
-  // search
+  // SEARCH
   searchElm.addEventListener("input", async (e) => {
     state.searchTerm = e.target.value;
     debounceSearch(state.sortBy, state.searchTerm);
   });
-  searchElm.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      state.searchTerm = e.target.value;
-      debounceSearch(state.sortBy, state.searchTerm);
-    }
-  });
+  // searchElm.addEventListener("keydown", (e) => {
+  //   if (e.key === "Enter") {
+  //     state.searchTerm = e.target.value;
+  //     debounceSearch(state.sortBy, state.searchTerm);
+  //   }
+  // });
   document.getElementById("clearSearchBox").addEventListener("click", (e) => {
     searchElm.value = "";
     state.searchTerm = undefined;
