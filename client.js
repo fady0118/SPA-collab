@@ -456,6 +456,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const data = await response.json();
     await displayDashboard(state.user);
   }
+  
   // SORTING
   const sortingElms = document.querySelectorAll(".sort_by");
   const searchElm = document.getElementById("searchBox");
@@ -464,14 +465,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     elm.addEventListener("click", async (e) => {
       e.preventDefault();
       state.sortBy = e.target.value;
-      await getSortedVidReqs(state.sortBy, state.searchTerm);
+      await renderSortedVidReqs(state.sortBy, state.searchTerm);
       sortingElms.forEach((element) => {
         element.classList.remove("active");
       });
       e.target.classList.add("active");
     });
   });
-  // SEARCH
+  // SEARCHING
   searchElm.addEventListener("input", async (e) => {
     state.searchTerm = e.target.value;
     debounceSearch(state.sortBy, state.searchTerm);
@@ -487,17 +488,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     state.searchTerm = undefined;
     debounceSearch(state.sortBy, state.searchTerm);
   });
-  // FILTER
+  // FILTERING
   filterElms.forEach((elm) => {
     elm.addEventListener("click", async (e) => {
       // update requestsList
-      requestsList = await getRequests();
+      const sortedRequestsList = await getSortedVidReqs(state.sortBy, state.searchTerm);
       // filtering and rendering
       let filteredList;
       if (e.target.value.toLowerCase() === "all") {
-        filteredList = requestsList;
+        filteredList = sortedRequestsList;
       } else {
-        filteredList = requestsList.filter((request) => request.status.toLowerCase() === e.target.value.toLowerCase());
+        filteredList = sortedRequestsList.filter((request) => request.status.toLowerCase() === e.target.value.toLowerCase());
       }
       renderList(filteredList, state.user.role);
       // styling
@@ -508,10 +509,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 
   // getVidReqs
-  async function getSortedVidReqs(sortBy = "New First", searchTerm = undefined) {
+  async function getSortedVidReqs(sortBy, searchTerm){
     const searchTermQuery = searchTerm ? `&topic_title=${searchTerm}` : "";
     const response = await fetch(`http://localhost:4000/video-request?sortBy=${sortBy}${searchTermQuery}`);
-    const sortedRequests = await response.json();
+    return await response.json();
+  }
+  async function renderSortedVidReqs(sortBy = "New First", searchTerm = undefined) {
+    const sortedRequests = await getSortedVidReqs(sortBy, searchTerm);
     renderList(sortedRequests,state.user.role);
   }
   // debounce
@@ -523,6 +527,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     };
   }
   const debounceSearch = debounce(async (sortType, searchTerm) => {
-    await getSortedVidReqs(sortType, searchTerm);
+    await renderSortedVidReqs(sortType, searchTerm);
   }, 500);
 });
