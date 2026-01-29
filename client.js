@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 </div>`:''
               }
                 <div class="card-body d-flex flex-row justify-content-between align-items-center">
-                    <div class="d-flex flex-column" style="width:35%">
+                    <div class="d-flex flex-column order-1" style="width:35%">
                         <h3>${request.topic_title}</h3>
                         <p class="text-muted mb-2">${request.topic_details}</p>
                         <p class="mb-0 text-muted">
@@ -267,12 +267,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                         </p>
                     </div>
                     ${request.video_ref.link?`
-                        <div id="video_thumbnail" class="bg-light rounded" style="aspect-ratio: 16/9;width: 15%;">
+                        <div id="video_thumbnail" class="bg-light rounded position-relative order-2" style="aspect-ratio: 16/9;width: 15%;">
                           <a class="d-block w-100 h-100 " href="${request.video_ref.link}" target="_blank"></a>
+                          <span class="material-symbols-outlined position-absolute top-50 start-50 translate-middle z-1 fs-1">play_circle</span>
                         </div>`
                       :''
                     }
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center order-3">
                       <div class="d-flex flex-column text-center">
                           <a class="btn upvote-btn ${request.votes["ups"].includes(state.userId) ? "voteBtnStyle" : ""}" name="ups">🢁</a>
                           <h3 class="voteScore">${request.votes["ups"].length - request.votes["downs"].length}</h3>
@@ -312,13 +313,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     // fetch and add thumbnail to requests with video links
-    const videoMatch = request.video_ref.link.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/);
-    if(videoMatch!==null){
-      const video_Id = videoMatch[1];
-      const thumbnail = `https://img.youtube.com/vi/${video_Id}/hqdefault.jpg`;
-      requestEl.querySelector("#video_thumbnail").style.backgroundImage =`url(${thumbnail})`;
-      requestEl.querySelector("#video_thumbnail").style.backgroundSize = "cover";
-      requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
+    if(request.video_ref.link!==""){
+      const videoMatch = request.video_ref.link.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/);
+      if(videoMatch!==null){
+        const video_Id = videoMatch[1];
+        const thumbnail = `https://img.youtube.com/vi/${video_Id}/hqdefault.jpg`;
+        requestEl.querySelector("#video_thumbnail").style.backgroundImage =`url(${thumbnail})`;
+        requestEl.querySelector("#video_thumbnail").style.backgroundSize = "cover";
+        requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
+      }
     }
     
     // admin header elements
@@ -427,15 +430,30 @@ document.addEventListener("DOMContentLoaded", async function () {
       linkSaveBtn.addEventListener("click", async ()=>{
 
         const videoRefValue = videoRefEl.querySelector("input[type='text']").value;
-        const videoRefLinkValue = updateVideoRefLink(videoRefValue);
+        const videoRefLinkValue = await updateVideoRefLink(videoRefValue);
 
         // update video link and thumbnail
-        const video_Id = videoRefLinkValue.video_link.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/)[1];
-        const thumbnail = `https://img.youtube.com/vi/${video_Id}/hqdefault.jpg`;
-        requestEl.querySelector("#video_thumbnail>a").setAttribute("href",videoRefLinkValue.video_link)
-        requestEl.querySelector("#video_thumbnail").style.backgroundImage =`url(${thumbnail})`;
-        requestEl.querySelector("#video_thumbnail").style.backgroundSize = "cover";
-        requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
+        if(videoRefLinkValue.video_link!==""){
+          const video_Id = videoRefLinkValue.video_link.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/)[1];
+          const thumbnail = `https://img.youtube.com/vi/${video_Id}/hqdefault.jpg`;
+          // in case the video thumbnail element doesn't exist (first time) we'll need to create it
+          if(!requestEl.querySelector("#video_thumbnail>a")){
+            console.log("creating thumbnail element");
+            const thumbnailDIV = document.createElement('div');
+            thumbnailDIV.id = "video_thumbnail"
+            thumbnailDIV.classList = "bg-light rounded position-relative order-2"
+            thumbnailDIV.setAttribute("style","aspect-ratio: 16/9;width: 15%;")
+            thumbnailDIV.innerHTML= `<a class="d-block w-100 h-100 " target="_blank"></a>
+            <span class="material-symbols-outlined position-absolute top-50 start-50 translate-middle z-1 fs-1">play_circle</span>
+            `
+            requestEl.querySelector("div.card-body").appendChild(thumbnailDIV);
+          }
+          requestEl.querySelector("#video_thumbnail>a").setAttribute("href",videoRefLinkValue.video_link)
+          requestEl.querySelector("#video_thumbnail").style.backgroundImage =`url(${thumbnail})`;
+          requestEl.querySelector("#video_thumbnail").style.backgroundSize = "cover";
+          requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
+        }
+
         
         // update requestsList
         requestsList = await getRequests();
