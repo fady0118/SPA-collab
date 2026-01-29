@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     userId: "",
     user:"",
   };
+
+  // this function is to authenticate the userId from the URl 
   async function checkUserId(userId) {
     return await fetch("http://localhost:4000/user/checkId", {
       method: "POST",
@@ -25,6 +27,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       body: JSON.stringify({ userId }),
     });
   }
+  // check if the url contains an id then authenticate it and move to user dashboard or return
   if (window.location.search) {
     const userId = new URLSearchParams(window.location.search).get("id");
     if (!userId) {
@@ -36,14 +39,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!response.ok) {
       return;
     }
-    const user = await response.json();
+    const user = await response.json(); // parse the response
+
+    // update the state to use later in requests
     state.user = user;
     await displayDashboard(state.user);
-
+    // transition from login form to dashboard page
     document.getElementById("loginFormContainer").classList.add("d-none");
     document.getElementById("app_container").classList.remove("d-none");
   }
-  // display requests
+
+  // fetch requests from database and then render them in the dashboard element
   async function displayDashboard(user) {
     if(user===""){
       return
@@ -74,6 +80,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     
   }
   // render requests
+  // takes an array of the requests to render, and the role of the user since admin extra controls and user gets request submission form
   function renderList(list, role="user") {
     requestsContainer.innerHTML = "";
     list.forEach((request) => {
@@ -82,7 +89,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   }
   // SUBMITTING FORM
-  // validation
+  // client side sign in form validation if this detects errors in name or email it will display error messages
   function checkSignInFormValidity(formData) {
     const name = formData.get("author_name");
     const email = formData.get("author_email");
@@ -110,6 +117,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
     return validationErrors;
   }
+  // client side checks for request submission validity
   function checkTopicFormValidity(formData) {
     const topic_title = formData.get("topic_title");
     const topic_details = formData.get("topic_details");
@@ -139,7 +147,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
     return validationErrors;
   }
-  // form handlers
+  // form handlers to handle signIn and request submit forms
+  // sign in form takes login form data checks its validity then submits to the backend endpoint or rejects
   function signInRequest() {
     const formData = new FormData(singInformEl);
     console.log(formData);
@@ -149,6 +158,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     singInformEl.submit();
   }
+  // request submit form takes form data checks its validity then submits to the backend endpoint or rejects
+  // if the request is accepted by client and server sides the created request is then pushed to the request list that is used to render the requests
+  // instead of rerendering the entire list we will render the new request only 
+  // the new request is generated using the singleVidReq function and then added to the dom
+  // we use prepend instead of appendChild since the desired order is newFirst
   async function sendVidRequest() {
     const formData = new FormData(formEl);
     formData.append("userId", state.userId);
@@ -162,7 +176,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         body: formData,
       });
       const data = await response.json();
-      console.log(data)
       requestsList.push(data);
       const vidRequestEl = getSingleVidReq(data, state.user.role);
       requestsContainer.prepend(vidRequestEl);
@@ -170,7 +183,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.log(error);
     }
   }
+
   // swap login & signup
+  // this is for the login/register form a button changes the form action and the button text from login to register and viceversa
+  // login expects that you are already a user so it submits the formdata to the login server endpoint
+  // register expects that you are not a user so it submits the formdata to the register new user server endpoint
   const loginBtn = singInformEl.querySelector("#loginBtn");
   const signupBtn = singInformEl.querySelector("#signupBtn");
   const signupLink = singInformEl.querySelector("#login2Register");
@@ -195,16 +212,24 @@ document.addEventListener("DOMContentLoaded", async function () {
     // form action
     singInformEl.setAttribute("action", "http://localhost:4000/user/login");
   });
+
   // fetch requests
+  // grabs request array from db parses it then returns the data
   async function getRequests() {
     const response = await fetch("http://localhost:4000/video-request");
     const vidRequests = await response.json();
     return vidRequests;
   }
 
+  // users can upvote or downvote requests as well as remove their old votes
+  // if i user clicks on a vote button this code will send the request id the userId and vote_type (up, down) to the server
+  // votes are unique that's why we send the userId so the backend can check the previous vote state
+  // the server update vote controller knows how to handle this request and returns the updated request
   async function updateVote(request_id, e) {
+    // the button name is the same as the vote_type so we can use it 
     const vote_type = e.target.name;
     try {
+      // send the update request 
       const response = await fetch(`http://localhost:4000/video-request/vote/${request_id}`, {
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
@@ -212,21 +237,22 @@ document.addEventListener("DOMContentLoaded", async function () {
       });
       const data = await response.json();
 
+      // get both vote buttons of the current element
       const upvoteBtn = e.target.parentElement.children.ups;
       const downvoteBtn = e.target.parentElement.children.downs;
+      // style the buttons so the user can the current state of their voting (upvote, downvote, none)
+      // the class is definded in the html it changes the buttons colors 
       data.newRequest.votes[upvoteBtn.name].includes(state.userId) ? upvoteBtn.classList.add("voteBtnStyle") : upvoteBtn.classList.remove("voteBtnStyle");
       data.newRequest.votes[downvoteBtn.name].includes(state.userId) ? downvoteBtn.classList.add("voteBtnStyle") : downvoteBtn.classList.remove("voteBtnStyle");
-
-      const voteScoreEl = e.target.parentElement.querySelector(".voteScore");
-      const voteScore = data.newRequest.votes["ups"].length - data.newRequest.votes["downs"].length;
-      voteScoreEl.textContent = voteScore;
-
-      // const index = requestsList.findIndex((reqItem) => reqItem._id === data.newRequest._id);
-      // requestsList[index].votes = data.newRequest.votes;
+      // we calculate the net votes to display the score of each request 
+      const voteScoreEl = e.target.parentElement.querySelector(".voteScore"); // grab the element
+      const voteScore = data.newRequest.votes["ups"].length - data.newRequest.votes["downs"].length; // calculate the score
+      voteScoreEl.textContent = voteScore; // update the score in the dom
     } catch (error) {
       console.log(error);
     }
   }
+  
   // create video request element with all its functionality
   function getSingleVidReq(request, role="user") {
     let date = new Date(request.createdAt);
