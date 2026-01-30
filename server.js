@@ -27,7 +27,6 @@ app.get("/", (req, res) => {
 app.get("/video-request", getAllVideoRequests);
 app.get("/video-request/:id", getVideoRequestById);
 app.post("/video-request", upload.none(), authMiddleware, createRequest);
-// app.patch("/video-request/:id", updateVideoRequest);
 app.patch("/video-request/vote/:id", authMiddleware, updateVoteForRequest);
 app.patch("/video-request/videoRef/:id", authMiddleware, addVideoRef);
 app.patch("/video-request/status/:id", authMiddleware, updateVideoStatus);

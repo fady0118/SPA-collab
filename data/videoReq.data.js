@@ -4,7 +4,7 @@ const createRequest = async (req, res) => {
   const { topic_title, topic_details, expected_result, target_level } = req.body;
   try {
     const video_req = await VideoReq.create({
-      author:req.user._id,
+      author: req.user._id,
       topic_title,
       topic_details,
       expected_result,
@@ -21,14 +21,18 @@ const createRequest = async (req, res) => {
 };
 
 const getAllVideoRequests = async (req, res) => {
-  const { sortBy, ...searchTerm } = req.query;
+  const { sortBy, filterBy, ...searchTerm } = req.query;
+  const query = {};
+  if (filterBy && filterBy!== "all") {
+    query.status = filterBy;
+  }
   try {
     let data;
     if (Object.entries(searchTerm).length) {
-      const { topic_title } = searchTerm;
-      data = await VideoReq.find({ topic_title: { $regex: topic_title, $options: "i" } }).populate("author").sort({ createdAt: -1 });
+      query.topic_title = { $regex: searchTerm.topic_title, $options: "i" };
+      data = await VideoReq.find(query).populate("author").sort({ createdAt: -1 });
     } else {
-      data = await VideoReq.find({}).populate("author").sort({ createdAt: -1 });
+      data = await VideoReq.find(query).populate("author").sort({ createdAt: -1 });
     }
     if (!data) {
       return res.status(404).json("data not found");
@@ -79,10 +83,10 @@ const updateVideoRequest = async (req, res) => {
 
 const deleteVideoRequest = async (req, res) => {
   // only the super user can delete requests
-  if(req.user.role !== "super user"){
+  if (req.user.role !== "super user") {
     return res.status(401).json({
-      message:"Unauthorized"
-    })
+      message: "Unauthorized",
+    });
   }
   try {
     const deletedRequest = await VideoReq.findByIdAndDelete(req.params.id);
@@ -107,125 +111,103 @@ const updateVoteForRequest = async (req, res) => {
     // A. user hasn't voted before
     // B. user already voted and wants to remove his vote
     // C. user already voted other_type before and wants to change vote_type
-    // let newRequest;
-    // // A)
-    // if (!oldRequest.votes[vote_type].includes(req.user._id) && !oldRequest.votes[other_type].includes(req.user._id)) {
-    //   // add req.user._id to vote_type
-    //   newRequest = await VideoReq.findByIdAndUpdate(
-    //     req.params.id,
-    //     {
-    //       votes: {
-    //         [vote_type]: [...oldRequest.votes[vote_type], req.user._id],
-    //         [other_type]: oldRequest.votes[other_type],
-    //       },
-    //     },
-    //     { new: true },
-    //   );
-    // }
-    // // B)
-    // else if (oldRequest.votes[vote_type].includes(req.user._id)) {
-    //   // remove req.user._id from vote_type
-    //   newRequest = await VideoReq.findByIdAndUpdate(
-    //     req.params.id,
-    //     {
-    //       votes: {
-    //         [vote_type]: oldRequest.votes[vote_type].filter((currentId) => currentId.toString() !== req.user._id.toString()),
-    //         [other_type]: oldRequest.votes[other_type],
-    //       },
-    //     },
-    //     { new: true },
-    //   );
-    // }
-    // // C)
-    // else if (oldRequest.votes[other_type].includes(req.user._id)) {
-    //   // change req.user._id from other_type to vote_type
-    //   newRequest = await VideoReq.findByIdAndUpdate(
-    //     req.params.id,
-    //     {
-    //       votes: {
-    //         [vote_type]: [...oldRequest.votes[vote_type], req.user._id],
-    //         [other_type]: oldRequest.votes[other_type].filter((currentId) => currentId.toString() !== req.user._id.toString()),
-    //       },
-    //     },
-    //     { new: true },
-    //   );
-    // }
 
     // mongoDb native option $addToSet, $pull
     let newRequest;
     // A)
     if (!oldRequest.votes[vote_type].includes(req.user._id) && !oldRequest.votes[other_type].includes(req.user._id)) {
-      newRequest = await VideoReq.findByIdAndUpdate(req.params.id, {
-        $addToSet: {
-          [`votes.${vote_type}`]: req.user._id,
+      newRequest = await VideoReq.findByIdAndUpdate(
+        req.params.id,
+        {
+          $addToSet: {
+            [`votes.${vote_type}`]: req.user._id,
+          },
         },
-      }, {new: true});
+        { new: true },
+      );
     }
     // B)
     if (oldRequest.votes[vote_type].includes(req.user._id)) {
-      newRequest = await VideoReq.findByIdAndUpdate(req.params.id, {
-        $pull: {
-          [`votes.${vote_type}`]: req.user._id,
+      newRequest = await VideoReq.findByIdAndUpdate(
+        req.params.id,
+        {
+          $pull: {
+            [`votes.${vote_type}`]: req.user._id,
+          },
         },
-      }, {new: true});
+        { new: true },
+      );
     }
     // C)
     if (oldRequest.votes[other_type].includes(req.user._id)) {
-      newRequest = await VideoReq.findByIdAndUpdate(req.params.id, {
-        $pull: {
-          [`votes.${other_type}`]: req.user._id,
+      newRequest = await VideoReq.findByIdAndUpdate(
+        req.params.id,
+        {
+          $pull: {
+            [`votes.${other_type}`]: req.user._id,
+          },
+          $addToSet: {
+            [`votes.${vote_type}`]: req.user._id,
+          },
         },
-        $addToSet: {
-          [`votes.${vote_type}`]: req.user._id,
-        },
-      }, {new: true});
+        { new: true },
+      );
     }
     res.status(200).json({ message: "votes updated", oldRequest, newRequest });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 const updateVideoStatus = async (req, res) => {
-  if(req.user.role!=="super user"){
+  if (req.user.role !== "super user") {
     return res.status(401).json({
-      message:"Unauthorized"
-    })
+      message: "Unauthorized",
+    });
   }
-  const {status} = req.body;
+  const { status } = req.body;
   try {
-    const updatedVideoStatus = await VideoReq.findByIdAndUpdate(req.params.id, {
-      status
-    }, {new:true, runValidators: true })
-    if(!updatedVideoStatus){
-      throw new Error("video-request not found")
+    const updatedVideoStatus = await VideoReq.findByIdAndUpdate(
+      req.params.id,
+      {
+        status,
+      },
+      { new: true, runValidators: true },
+    );
+    if (!updatedVideoStatus) {
+      throw new Error("video-request not found");
     }
     res.status(200).json(updatedVideoStatus);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
 
 const addVideoRef = async (req, res) => {
-  if(req.user.role!=="super user"){
+  if (req.user.role !== "super user") {
     return res.status(401).json({
-      message:"Unauthorized"
-    })
+      message: "Unauthorized",
+    });
   }
-  const {link} = req.body;
+  const { link } = req.body;
   try {
-    const updatedvideoRef = await VideoReq.findByIdAndUpdate(req.params.id, {
-      video_ref:{
-        link, 
-        date: `${new Date().toLocaleTimeString()} ${new Date().toDateString()}`
-      }
-    }, {new:true})
-    if(!updatedvideoRef){
+    const updatedvideoRef = await VideoReq.findByIdAndUpdate(
+      req.params.id,
+      {
+        video_ref: {
+          link,
+          date: `${new Date().toLocaleTimeString()} ${new Date().toDateString()}`,
+        },
+      },
+      { new: true },
+    );
+    if (!updatedvideoRef) {
       return res.status(404).json("request not found");
     }
-    res.status(200).json({video_link:updatedvideoRef.video_ref.link})
+    res.status(200).json({ video_link: updatedvideoRef.video_ref.link });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
 
 export { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest, updateVoteForRequest, updateVideoStatus, addVideoRef };
