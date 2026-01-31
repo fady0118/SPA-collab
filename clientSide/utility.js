@@ -1,4 +1,5 @@
-import { formEl, loginBtn, loginLink, requestsContainer, signInFormEl, signupBtn, signupLink, state } from "./client.js";
+import { state } from "./client.js";
+import { get_formEl, get_loginBtn, get_loginLink, get_requestsContainer, get_signInFormEl, get_signupBtn, get_signupLink } from "./dom.js";
 import { getSingleVidReq } from "./videoReqTemp.js";
 
 // fetch requests
@@ -23,6 +24,9 @@ async function renderSortedVidReqs(sortBy, searchTerm, filterBy = "all") {
 // render requests
 // takes an array of the requests to render, and the role of the user since admin extra controls and user gets request submission form
 function renderList(list, role = "user") {
+  console.log("renderList")
+  // DOM elements
+  const requestsContainer = get_requestsContainer();
   requestsContainer.innerHTML = "";
   list.forEach((request) => {
     const vidRequestEl = getSingleVidReq(request, role);
@@ -60,6 +64,10 @@ async function displayDashboard(user) {
   }
 }
 
+// change hash-path
+function navigate(path) {
+  location.hash = path;
+}
 // update video link function
 // make request to update the videoRef.link value of a request
 async function updateVideoRefLink(requestId, userId, videoRefValue) {
@@ -73,6 +81,9 @@ async function updateVideoRefLink(requestId, userId, videoRefValue) {
 
 // client side sign-in form validation if this detects errors in name or email it will display error messages
 function checkSignInFormValidity(formData) {
+  // DOM elements
+  const signInFormEl = get_signInFormEl();
+
   const name = formData.get("author_name");
   const email = formData.get("author_email");
   let validationErrors = 0;
@@ -102,6 +113,9 @@ function checkSignInFormValidity(formData) {
 
 // client side checks for request submission validity
 function checkTopicFormValidity(formData) {
+  // DOM elements
+  const formEl = get_formEl();
+
   const topic_title = formData.get("topic_title");
   const topic_details = formData.get("topic_details");
   let validationErrors = 0;
@@ -141,6 +155,13 @@ async function checkUserId(userId) {
 
 // swap login & signup
 function swapLoginToSignup() {
+  // DOM elements
+  const loginBtn = get_loginBtn();
+  const signInFormEl = get_signInFormEl();
+  const signupBtn = get_signupBtn()
+  const signupLink = get_signupLink();
+  const loginLink = get_loginLink();
+
   // show other button
   loginBtn.classList.add("d-none");
   signupBtn.classList.remove("d-none");
@@ -151,6 +172,12 @@ function swapLoginToSignup() {
   signInFormEl.setAttribute("action", "http://localhost:4000/user/signup");
 }
 function swapSignupToLogin() {
+  // DOM elements
+  const loginBtn = get_loginBtn();
+  const signInFormEl = get_signInFormEl();
+  const signupBtn = get_signupBtn()
+  const signupLink = get_signupLink();
+  const loginLink = get_loginLink();
   // show other button
   loginBtn.classList.remove("d-none");
   signupBtn.classList.add("d-none");
@@ -222,6 +249,7 @@ function getThumbnail(link) {
 export {
   renderList,
   displayDashboard,
+  navigate,
   updateVideoRefLink,
   checkSignInFormValidity,
   checkTopicFormValidity,

@@ -1,12 +1,15 @@
 // this file keeps definition of user-action functions which are sign-in, create requests, add/update vote
-import { state, formEl, signInFormEl, requestsContainer } from "./client.js";
+import { state } from "./client.js";
+import { get_formEl, get_signInFormEl, get_requestsContainer } from "./dom.js"
 import { checkTopicFormValidity, checkSignInFormValidity } from "./utility.js";
 import { getSingleVidReq } from "./videoReqTemp.js";
+
 
 // SUBMITTING FORMS
 // form handlers to handle signIn and request submit forms
 // sign in form takes login form data checks its validity then submits to the backend endpoint or rejects
-function signInRequest() {
+function signInRequest(e) {
+  const signInFormEl = e.target;
   const formData = new FormData(signInFormEl);
   const validationErrors = checkSignInFormValidity(formData);
   if (validationErrors) {
@@ -20,7 +23,10 @@ function signInRequest() {
 // instead of rerendering the entire list we will render the new request only
 // the new request is generated using the singleVidReq function and then added to the dom
 // we use prepend instead of appendChild since the desired order is newFirst
-async function sendVidRequest() {
+async function sendVidRequest(e) {
+  const formEl = e.target;
+  const requestsContainer = get_requestsContainer();
+
   const formData = new FormData(formEl);
   formData.append("userId", state.userId);
   const validationErrors = checkTopicFormValidity(formData);
