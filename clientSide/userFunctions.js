@@ -1,21 +1,32 @@
 // this file keeps definition of user-action functions which are sign-in, create requests, add/update vote
 import { state } from "./client.js";
-import { get_formEl, get_signInFormEl, get_requestsContainer } from "./dom.js"
-import { checkTopicFormValidity, checkSignInFormValidity } from "./utility.js";
+import { get_requestsContainer } from "./dom.js";
+import { checkTopicFormValidity, checkSignInFormValidity, navigate } from "./utility.js";
 import { getSingleVidReq } from "./videoReqTemp.js";
-
 
 // SUBMITTING FORMS
 // form handlers to handle signIn and request submit forms
 // sign in form takes login form data checks its validity then submits to the backend endpoint or rejects
-function signInRequest(e) {
+async function signInRequest(e) {
   const signInFormEl = e.target;
   const formData = new FormData(signInFormEl);
   const validationErrors = checkSignInFormValidity(formData);
   if (validationErrors) {
     return;
   }
-  signInFormEl.submit();
+  // login server backend call
+  const response = await fetch("http://localhost:4000/user/login", {
+    method: "POST",
+    body: formData,
+  });
+  // parse the response
+  const { user } = await response.json();
+  // update the state
+  state.user = user;
+  state.userId = user._id;
+  console.log(state)
+  // navigate to dashboard
+  navigate("/dashboard");
 }
 
 // request submit form takes form data checks its validity then submits to the backend endpoint or rejects
@@ -56,7 +67,7 @@ async function sendVidRequest(e) {
 async function updateVote(request_id, e) {
   // the button name is the same as the vote_type so we can use it
   const vote_type = e.target.name;
-  console.log({vote_type})
+  console.log({ vote_type });
   try {
     // send the update request
     const response = await fetch(`http://localhost:4000/video-request/vote/${request_id}`, {

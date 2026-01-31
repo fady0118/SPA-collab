@@ -14,7 +14,7 @@ export default function Login() {
     </nav>
   <div id="loginFormContainer"
             class="login-Form mt-5 col-md-4 offset-md-4 ">
-            <form action="http://localhost:4000/user/login" method="post"
+            <form
                 id="loginForm" class="d-flex flex-column align-items-center"
                 novalidate>
                 <div class="mb-2 col-md-8">

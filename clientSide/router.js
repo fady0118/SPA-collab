@@ -7,6 +7,7 @@ import { displayDashboard } from "./utility.js";
 
 
 async function renderLogin() {
+  console.log('router render login')
   app.innerHTML = "";
   app.appendChild(Login());
   // element definitions & event listeners
@@ -14,6 +15,7 @@ async function renderLogin() {
 }
 
 async function renderDashboard() {
+  console.log('router render dashboard')
   // render the view
   app.innerHTML = "";
   app.appendChild(Dashboard());

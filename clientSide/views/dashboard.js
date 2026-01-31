@@ -1,6 +1,7 @@
+import { state } from "../client.js";
 import { get_formEl } from "../dom.js";
 import { sendVidRequest } from "../userFunctions.js";
-import { getTheme, toggleTheme } from "../utility.js";
+import { getTheme, navigate, toggleTheme } from "../utility.js";
 
 export default function Dashboard() {
   // get color theme
@@ -118,7 +119,12 @@ function dashboardViewUtils() {
   themeBtn.addEventListener("click", (e) => {
     toggleTheme();
   });
+  const logoutBtn = document.getElementById("logoutBtn");
+  logoutBtn.addEventListener("click", (e) => {
+    state.user = "";
+    state.userId = "";
+    navigate("/");
+  });
 }
-
 
 export { dashboardViewUtils };

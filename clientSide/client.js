@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // check that the id belongs to a user
     const response = await checkUserId(state.userId);
     if (!response.ok) return;
-    history.replaceState({}, "", location.pathname + location.hash);
+    // history.replaceState({}, "", location.pathname + location.hash);
     // update the state to use later in requests
     state.user = await response.json(); 
     navigate("/dashboard")
