@@ -12,7 +12,7 @@ const app = express();
 const upload = multer();
 
 app.use(cors()); // allow CORS
-app.use(express.static("public")); // serve static files in public
+app.use(express.static("clientSide")); // serve static files in public
 
 // parsing middleware
 app.use(express.json());
