@@ -9,13 +9,16 @@ import { getSingleVidReq } from "./videoReqTemp.js";
 // sign in form takes login form data checks its validity then submits to the backend endpoint or rejects
 async function signInRequest(e) {
   const signInFormEl = e.target;
+  console.log(e.target)
+  const submitButton = e.target.querySelector('button:not(.d-none)');
   const formData = new FormData(signInFormEl);
   const validationErrors = checkSignInFormValidity(formData);
   if (validationErrors) {
     return;
   }
   // login server backend call
-  const response = await fetch("http://localhost:4000/user/login", {
+  const URLendpoint = `${submitButton.textContent==="Login"?"http://localhost:4000/user/login":"http://localhost:4000/user/signup"}`
+  const response = await fetch(URLendpoint, {
     method: "POST",
     body: formData,
   });
