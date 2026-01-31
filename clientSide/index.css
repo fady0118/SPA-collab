@@ -1,0 +1,43 @@
+:root {
+    --bg-1: #1b1c1d;
+    --bg-2: #17191a;
+}
+
+input:user-invalid,
+textarea:user-invalid {
+    border: brown solid 1px;
+}
+
+/* vote buttons styling */
+a.btn.voteBtnStyle.upvote-btn {
+    color: brown;
+    -webkit-text-stroke: transparent;
+}
+
+a.btn.voteBtnStyle.downvote-btn {
+    color: rgb(83, 25, 207);
+    -webkit-text-stroke: transparent;
+}
+
+.upvote-btn,
+.downvote-btn {
+    font-size: 1rem;
+    color: transparent;
+    -webkit-text-stroke: 1px black;
+}
+
+#searchBox::placeholder,
+textarea::placeholder {
+    color: inherit;
+    opacity: 0.5;
+}
+
+#clearSearchBox:hover {
+    background-color: rgba(var(--bs-black-rgb), 0.2);
+}
+
+#videoRefClear:hover {
+    background-color: rgba(var(--bs-secondary-bg-rgb), 0.5) !important;
+}
+
+

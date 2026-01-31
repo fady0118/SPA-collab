@@ -1,11 +1,18 @@
 import { get_loginBtn, get_loginLink, get_signInFormEl, get_signupBtn, get_signupLink } from "../dom.js";
 import { signInRequest } from "../userFunctions.js";
-import { swapLoginToSignup, swapSignupToLogin } from "../utility.js";
+import { getTheme, swapLoginToSignup, swapSignupToLogin, toggleTheme } from "../utility.js";
 
 export default function Login() {
+  const themeMode = getTheme();
   const loginDiv = document.createElement("div");
-  loginDiv.className = "container my-5 d-flex flex-column justify-content-center"
-  loginDiv.innerHTML = `    <div id="loginFormContainer"
+  loginDiv.className = "container my-5 d-flex flex-column justify-content-center";
+  loginDiv.innerHTML = `   
+    <nav class="navbar bg-body d-flex flex-row-reverse">
+        <div id="toggleTheme" class="btn">
+            <span class="material-icons-outlined">${themeMode === "dark" ? "light_mode" : "dark_mode"}</span>
+        </div>
+    </nav>
+  <div id="loginFormContainer"
             class="login-Form mt-5 col-md-4 offset-md-4 ">
             <form action="http://localhost:4000/user/login" method="post"
                 id="loginForm" class="d-flex flex-column align-items-center"
@@ -67,7 +74,7 @@ function loginViewUtils() {
   const signupBtn = get_signupBtn();
   const signupLink = get_signupLink();
   const loginLink = get_loginLink();
-
+  const themeBtn = document.getElementById("toggleTheme");
   // add event listeners
   signInFormEl.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -78,6 +85,9 @@ function loginViewUtils() {
   });
   loginLink.addEventListener("click", (e) => {
     swapSignupToLogin();
+  });
+  themeBtn.addEventListener("click", (e) => {
+    toggleTheme();
   });
 }
 export { loginViewUtils };

@@ -1,10 +1,20 @@
-import { get_formEl, get_signInFormEl } from "../dom.js";
+import { get_formEl } from "../dom.js";
 import { sendVidRequest } from "../userFunctions.js";
+import { getTheme, toggleTheme } from "../utility.js";
 
 export default function Dashboard() {
+  // get color theme
+  const themeMode = getTheme();
   const dashboardDiv = document.createElement("div");
-  dashboardDiv.className = "container py-5 d-flex flex-column justify-content-center";
-  dashboardDiv.innerHTML = `<div id="app_container" class="app-Content">
+  dashboardDiv.className = "container py-1 d-flex flex-column justify-content-center";
+  dashboardDiv.innerHTML = `    
+  <nav class="navbar bg-body">
+        <div id="toggleTheme" class="btn">
+            <span class="material-icons-outlined">${themeMode === "dark" ? "light_mode" : "dark_mode"}</span>
+        </div>
+        <button id="logoutBtn" type="button" class="btn btn-outline-danger">Logout</button>
+    </nav>
+  <div id="app_container" class="app-Content">
             <div id="welcomeDashboard"></div>
             <form id="requestForm" class="mt-4" novalidate>
                 <div class="row mb-3">
@@ -95,7 +105,6 @@ export default function Dashboard() {
             </div>
             <div id="listOfRequests" class="mt-4"></div>
         </div>`;
-
   return dashboardDiv;
 }
 
@@ -105,6 +114,11 @@ function dashboardViewUtils() {
     e.preventDefault();
     sendVidRequest(e);
   });
+  const themeBtn = document.getElementById("toggleTheme");
+  themeBtn.addEventListener("click", (e) => {
+    toggleTheme();
+  });
 }
+
 
 export { dashboardViewUtils };

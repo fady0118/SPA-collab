@@ -1,43 +1,42 @@
+// router.js
 import Login, { loginViewUtils } from "./views/login.js";
 import Dashboard, { dashboardViewUtils } from "./views/dashboard.js";
-import { get_formEl, get_loginBtn, get_loginLink, get_signInFormEl, get_signupBtn, get_signupLink } from "./dom.js";
-import { signInRequest } from "./userFunctions.js";
 import dataUtils from "./dataUtils.js";
 import { state } from "./client.js";
+import { displayDashboard } from "./utility.js";
 
-// const routes = {
-//   "/": Login,
-//   "/dashboard": Dashboard,
-// };
 
-function renderLogin() {
+async function renderLogin() {
   app.innerHTML = "";
   app.appendChild(Login());
   // element definitions & event listeners
   loginViewUtils();
 }
-function renderDashboard() {
+
+async function renderDashboard() {
   // render the view
   app.innerHTML = "";
   app.appendChild(Dashboard());
   // element definitions & event listeners
   dataUtils();
   dashboardViewUtils();
+  await displayDashboard(state.user)
 }
 
-export default function router() {
+export default async function router() {
   if (!state.userId) {
-    renderLogin();
+    await renderLogin();
     return;
   }
   // get the path after #
   const hash = location.hash.slice(1) || "/";
+  console.log(hash)
   // const view = routes[hash];
   if (hash === "/") {
     // render the view
-    renderLogin();
+    await renderLogin();
   } else if (hash === "/dashboard") {
     // render the view
-    renderDashboard();
+    await renderDashboard();
   }
 }

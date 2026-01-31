@@ -24,7 +24,6 @@ async function renderSortedVidReqs(sortBy, searchTerm, filterBy = "all") {
 // render requests
 // takes an array of the requests to render, and the role of the user since admin extra controls and user gets request submission form
 function renderList(list, role = "user") {
-  console.log("renderList")
   // DOM elements
   const requestsContainer = get_requestsContainer();
   requestsContainer.innerHTML = "";
@@ -68,6 +67,7 @@ async function displayDashboard(user) {
 function navigate(path) {
   location.hash = path;
 }
+
 // update video link function
 // make request to update the videoRef.link value of a request
 async function updateVideoRefLink(requestId, userId, videoRefValue) {
@@ -152,13 +152,15 @@ async function checkUserId(userId) {
     body: JSON.stringify({ userId }),
   });
 }
-
 // swap login & signup
+// this is for the login/register form a button changes the form action and the button text from login to register and viceversa
+// login expects that you are already a user so it submits the formdata to the login server endpoint
+// register expects that you are not a user so it submits the formdata to the register new user server endpoint
 function swapLoginToSignup() {
   // DOM elements
   const loginBtn = get_loginBtn();
   const signInFormEl = get_signInFormEl();
-  const signupBtn = get_signupBtn()
+  const signupBtn = get_signupBtn();
   const signupLink = get_signupLink();
   const loginLink = get_loginLink();
 
@@ -175,7 +177,7 @@ function swapSignupToLogin() {
   // DOM elements
   const loginBtn = get_loginBtn();
   const signInFormEl = get_signInFormEl();
-  const signupBtn = get_signupBtn()
+  const signupBtn = get_signupBtn();
   const signupLink = get_signupLink();
   const loginLink = get_loginLink();
   // show other button
@@ -245,6 +247,30 @@ function getThumbnail(link) {
     return videoTthumbnail;
   }
 }
+// dark/light mode
+function getTheme() {
+  return document.documentElement.getAttribute("data-bs-theme");
+}
+function autodetectColorTheme() {
+  console.log("autodetectColorTheme");
+  const prefersDarkMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const htmlEl = document.documentElement;
+  if (prefersDarkMode) {
+    // User prefers dark theme
+    htmlEl.setAttribute("data-bs-theme", "dark");
+  } else {
+    // User prefers light theme or no preference is set
+    htmlEl.setAttribute("data-bs-theme", "light");
+  }
+}
+function toggleTheme() {
+  if (document.documentElement.getAttribute("data-bs-theme") === "dark") {
+    document.documentElement.setAttribute("data-bs-theme", "light");
+  } else if (document.documentElement.getAttribute("data-bs-theme") === "light") {
+    document.documentElement.setAttribute("data-bs-theme", "dark");
+  }
+  console.log("toggleTheme");
+}
 
 export {
   renderList,
@@ -261,4 +287,7 @@ export {
   debounceSearch,
   createPopup,
   getThumbnail,
+  autodetectColorTheme,
+  getTheme,
+  toggleTheme,
 };

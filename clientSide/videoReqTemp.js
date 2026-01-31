@@ -9,7 +9,7 @@ function getSingleVidReq(request, role = "user") {
   const dateFormat = `${date.toLocaleDateString("en-US", { weekday: "short" })} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
   const statusArray = ["new", "planned", "done"];
   const vidRequestTemplate = `
-    <div class="card mb-3 flex-fill bg-custom-dark text-light border border-dark-subtle">
+    <div class="card mb-3 flex-fill bg-dark-subtle text-light border border-dark-subtle">
               ${
                 role === "super user"
                   ? `
@@ -50,7 +50,7 @@ function getSingleVidReq(request, role = "user") {
                         ? `
                         <div id="video_thumbnail" class="bg-light rounded position-relative order-2" style="aspect-ratio: 16/9;width: 15%;">
                           <a class="d-block w-100 h-100" href="${request.video_ref.link}" target="_blank"></a>
-                          <span class="material-symbols-outlined position-absolute top-50 start-50 translate-middle z-1 fs-1" style="pointer-events: none;">play_circle</span>
+                          <span class="material-icons-outlined position-absolute top-50 start-50 translate-middle z-1 fs-1" style="pointer-events: none;">play_circle</span>
                         </div>`
                         : ""
                     }
