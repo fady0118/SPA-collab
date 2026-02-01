@@ -1,7 +1,7 @@
 import { state } from "../client.js";
 import { get_formEl } from "../dom.js";
 import { sendVidRequest } from "../userFunctions.js";
-import { getTheme, logout, navigate, toggleTheme, updateThemeIcon } from "../utility.js";
+import { getTheme, logout, toggleTheme, updateThemeIcon } from "../utility.js";
 
 export default function Dashboard() {
   // get color theme

@@ -24,6 +24,7 @@ async function renderDashboard() {
 }
 
 export default async function router() {
+  // prevent #/dashboard from moving to the dashboard view without logging in
   if (!state.userId) {
     await renderLogin();
     return;

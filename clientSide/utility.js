@@ -172,7 +172,7 @@ function swapLoginToSignup() {
   signupLink.classList.add("d-none");
   loginLink.classList.remove("d-none");
   // form action
-  signInFormEl.setAttribute("action", "http://localhost:4000/user/signup");
+  // signInFormEl.setAttribute("action", "http://localhost:4000/user/signup");
   // update header
   landingFormHeader.innerHTML = "Create an account";
 }
@@ -192,7 +192,7 @@ function swapSignupToLogin() {
   loginLink.classList.add("d-none");
   signupLink.classList.remove("d-none");
   // form action
-  signInFormEl.setAttribute("action", "http://localhost:4000/user/login");
+  // signInFormEl.setAttribute("action", "http://localhost:4000/user/login");
   // update header
   landingFormHeader.innerHTML = "Welcome back";
 }
