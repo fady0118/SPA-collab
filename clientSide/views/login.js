@@ -1,6 +1,6 @@
-import { get_loginBtn, get_loginLink, get_signInFormEl, get_signupBtn, get_signupLink } from "../dom.js";
+import { get_loginLink, get_signInFormEl, get_signupLink } from "../dom.js";
 import { signInRequest } from "../userFunctions.js";
-import { getTheme, swapLoginToSignup, swapSignupToLogin, toggleTheme } from "../utility.js";
+import { getTheme, swapLoginToSignup, swapSignupToLogin, toggleTheme, updateThemeIcon } from "../utility.js";
 
 export default function Login() {
   const themeMode = getTheme();
@@ -8,16 +8,17 @@ export default function Login() {
   loginDiv.className = "container my-5 d-flex flex-column justify-content-center";
   loginDiv.innerHTML = `   
     <nav class="navbar bg-body d-flex flex-row-reverse">
-        <div id="toggleTheme" class="btn">
-            <span class="material-icons-outlined">${themeMode === "dark" ? "light_mode" : "dark_mode"}</span>
+        <div id="toggleTheme" class="btn d-flex align-itmes-center">
+            <span class="material-icons-outlined" style="pointer-events:none">${themeMode === "dark" ? "light_mode" : "dark_mode"}</span>
         </div>
     </nav>
+  <h3 id="loginFormHeader" class="mt-4 offset-md-4">Welcome Back</h3>
   <div id="loginFormContainer"
-            class="login-Form mt-5 col-md-4 offset-md-4 ">
+            class="login-Form mt-2 py-4 rounded col-md-4 offset-md-4 bg-body-secondary">
             <form
                 id="loginForm" class="d-flex flex-column align-items-center"
                 novalidate>
-                <div class="mb-2 col-md-8">
+                <div class="my-2 col-md-8">
                     <div class="form-group">
                         <label class="form-label" for="author_name">Your name
                             *</label class="form-label">
@@ -31,7 +32,7 @@ export default function Login() {
                         </p>
                     </div>
                 </div>
-                <div class="mb-2 col-md-8">
+                <div class="my-2 col-md-8">
                     <div class="form-group">
                         <label class="form-label" for="author_email">Your email
                             *</label>
@@ -46,11 +47,11 @@ export default function Login() {
                     </div>
                 </div>
                 <button id="loginBtn" name="loginBtn" type="submit"
-                    class="btn btn-primary mt-3 col-md-8">
+                    class="btn btn-primary mt-2 mb-1 col-md-8">
                     Login
                 </button>
                 <button id="signupBtn" name="signupBtn" type="submit"
-                    class="btn btn-primary mt-3 col-md-8 d-none">
+                    class="btn btn-primary mt-2 mb-1 col-md-8 d-none">
                     Signup
                 </button>
                 <p id="login2Register">don't have account? <a role="button"
@@ -61,6 +62,7 @@ export default function Login() {
                         class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">login
                         instead</a>
                 </p>
+                <span id="loginServerError" class="text-danger d-none"></span>
             </form>
         </div>
 `;
@@ -70,11 +72,10 @@ export default function Login() {
 function loginViewUtils() {
   // define DOM elements
   const signInFormEl = get_signInFormEl();
-  const loginBtn = get_loginBtn();
-  const signupBtn = get_signupBtn();
   const signupLink = get_signupLink();
   const loginLink = get_loginLink();
   const themeBtn = document.getElementById("toggleTheme");
+
   // add event listeners
   signInFormEl.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -88,6 +89,7 @@ function loginViewUtils() {
   });
   themeBtn.addEventListener("click", (e) => {
     toggleTheme();
+    updateThemeIcon(e.target.querySelector("span.material-icons-outlined"));
   });
 }
 export { loginViewUtils };

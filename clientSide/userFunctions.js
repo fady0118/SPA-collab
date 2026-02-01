@@ -1,7 +1,7 @@
 // this file keeps definition of user-action functions which are sign-in, create requests, add/update vote
 import { state } from "./client.js";
 import { get_requestsContainer } from "./dom.js";
-import { checkTopicFormValidity, checkSignInFormValidity, navigate } from "./utility.js";
+import { checkTopicFormValidity, checkSignInFormValidity, navigate, loginServerFail } from "./utility.js";
 import { getSingleVidReq } from "./videoReqTemp.js";
 
 // SUBMITTING FORMS
@@ -9,7 +9,6 @@ import { getSingleVidReq } from "./videoReqTemp.js";
 // sign in form takes login form data checks its validity then submits to the backend endpoint or rejects
 async function signInRequest(e) {
   const signInFormEl = e.target;
-  console.log(e.target)
   const submitButton = e.target.querySelector('button:not(.d-none)');
   const formData = new FormData(signInFormEl);
   const validationErrors = checkSignInFormValidity(formData);
@@ -17,17 +16,21 @@ async function signInRequest(e) {
     return;
   }
   // login server backend call
-  const URLendpoint = `${submitButton.textContent==="Login"?"http://localhost:4000/user/login":"http://localhost:4000/user/signup"}`
+  const URLendpoint = `${submitButton.innerText==="Login"?"http://localhost:4000/user/login":"http://localhost:4000/user/signup"}`
   const response = await fetch(URLendpoint, {
     method: "POST",
     body: formData,
   });
   // parse the response
   const { user } = await response.json();
+  if(!user){
+    loginServerFail();
+    return;
+  }
   // update the state
+  console.log('user Exists')
   state.user = user;
   state.userId = user._id;
-  console.log(state)
   // navigate to dashboard
   navigate("/dashboard");
 }

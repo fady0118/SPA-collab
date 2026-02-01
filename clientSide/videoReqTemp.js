@@ -9,7 +9,7 @@ function getSingleVidReq(request, role = "user") {
   const dateFormat = `${date.toLocaleDateString("en-US", { weekday: "short" })} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
   const statusArray = ["new", "planned", "done"];
   const vidRequestTemplate = `
-    <div class="card mb-3 flex-fill bg-dark-subtle text-light border border-dark-subtle">
+    <div class="card mb-3 flex-fill bg-body-secondary text-body border border-dark-subtle">
               ${
                 role === "super user"
                   ? `
@@ -96,7 +96,7 @@ function getSingleVidReq(request, role = "user") {
   // fetch and add thumbnail to requests with video links
   if (request.video_ref.link !== "") {
     const thumbnail = getThumbnail(request.video_ref.link);
-      if (thumbnail !== null) {
+    if (thumbnail !== null) {
       requestEl.querySelector("#video_thumbnail").style.backgroundImage = `url(${thumbnail})`;
       requestEl.querySelector("#video_thumbnail").style.backgroundSize = "cover";
       requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
@@ -174,10 +174,6 @@ function getSingleVidReq(request, role = "user") {
         requestEl.querySelector("#video_thumbnail").style.backgroundSize = "cover";
         requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
       }
-
-
-
-
       // update requestsList
       state.requestsList = await getSortedVidReqs();
     });

@@ -1,5 +1,5 @@
 import { state } from "./client.js";
-import { get_formEl, get_loginBtn, get_loginLink, get_requestsContainer, get_signInFormEl, get_signupBtn, get_signupLink } from "./dom.js";
+import { get_formEl, get_loginBtn, get_loginFormHeader, get_loginLink, get_loginServerNotice, get_requestsContainer, get_signInFormEl, get_signupBtn, get_signupLink } from "./dom.js";
 import { getSingleVidReq } from "./videoReqTemp.js";
 
 // fetch requests
@@ -65,7 +65,7 @@ async function displayDashboard(user) {
 
 // change hash-path
 function navigate(path) {
-  location.hash = '';
+  location.hash = "";
   location.hash = path;
 }
 
@@ -90,7 +90,6 @@ function checkSignInFormValidity(formData) {
   let validationErrors = 0;
 
   if (!name) {
-    // formEl.author_name.nextElementSibling.style.display="block";
     signInFormEl.author_name.classList.add("is-invalid");
     validationErrors++;
   }
@@ -164,6 +163,7 @@ function swapLoginToSignup() {
   const signupBtn = get_signupBtn();
   const signupLink = get_signupLink();
   const loginLink = get_loginLink();
+  const landingFormHeader = get_loginFormHeader();
 
   // show other button
   loginBtn.classList.add("d-none");
@@ -173,6 +173,8 @@ function swapLoginToSignup() {
   loginLink.classList.remove("d-none");
   // form action
   signInFormEl.setAttribute("action", "http://localhost:4000/user/signup");
+  // update header
+  landingFormHeader.innerHTML = "Create an account";
 }
 function swapSignupToLogin() {
   // DOM elements
@@ -181,6 +183,8 @@ function swapSignupToLogin() {
   const signupBtn = get_signupBtn();
   const signupLink = get_signupLink();
   const loginLink = get_loginLink();
+  const landingFormHeader = get_loginFormHeader();
+
   // show other button
   loginBtn.classList.remove("d-none");
   signupBtn.classList.add("d-none");
@@ -189,6 +193,8 @@ function swapSignupToLogin() {
   signupLink.classList.remove("d-none");
   // form action
   signInFormEl.setAttribute("action", "http://localhost:4000/user/login");
+  // update header
+  landingFormHeader.innerHTML = "Welcome back";
 }
 
 // debounce function that delays the execution of a task until the user stops typing for a specified amount of time
@@ -248,12 +254,12 @@ function getThumbnail(link) {
     return videoTthumbnail;
   }
 }
-// dark/light mode
+// return applied mode dark/light
 function getTheme() {
   return document.documentElement.getAttribute("data-bs-theme");
 }
+// runs on initial load detects user preferred color mode and sets the theme to match it
 function autodetectColorTheme() {
-  console.log("autodetectColorTheme");
   const prefersDarkMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
   const htmlEl = document.documentElement;
   if (prefersDarkMode) {
@@ -264,6 +270,7 @@ function autodetectColorTheme() {
     htmlEl.setAttribute("data-bs-theme", "light");
   }
 }
+// switches dark/light theme
 function toggleTheme() {
   if (document.documentElement.getAttribute("data-bs-theme") === "dark") {
     document.documentElement.setAttribute("data-bs-theme", "light");
@@ -272,7 +279,40 @@ function toggleTheme() {
   }
   console.log("toggleTheme");
 }
+// this update the icon of the them toggle button to match the opposite of the currently applied mode
+function updateThemeIcon(icon) {
+  console.log(icon);
+  const theme = getTheme();
+  if (theme === "dark") {
+    icon.textContent = "light_mode";
+  } else {
+    icon.textContent = "dark_mode";
+  }
+}
 
+// logout function
+function logout() {
+  state.user = "";
+  state.userId = "";
+  navigate("/");
+}
+
+// this runs when client side checks pass but the user is not found in the db
+function loginServerFail() {
+  const notFoundNotice = get_loginServerNotice()
+  const loginInputFields = get_signInFormEl().querySelectorAll('input');
+  loginInputFields.forEach(input=>{
+    input.classList.add("border-danger")
+    input.addEventListener("input",(e)=>{
+      loginInputFields.forEach(element=>{
+        notFoundNotice.classList.add("d-none")
+        element.classList.remove("border-danger")
+      })
+    })
+  })
+  notFoundNotice.classList.remove("d-none")
+  notFoundNotice.innerText = `Could not find that user. try again`;
+}
 export {
   renderList,
   displayDashboard,
@@ -291,4 +331,7 @@ export {
   autodetectColorTheme,
   getTheme,
   toggleTheme,
+  updateThemeIcon,
+  logout,
+  loginServerFail,
 };

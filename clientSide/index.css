@@ -40,4 +40,7 @@ textarea::placeholder {
     background-color: rgba(var(--bs-secondary-bg-rgb), 0.5) !important;
 }
 
+#toggleTheme>span.material-icons-outlined{
+    transition: all ease 0.5s;
+}
 

@@ -1,7 +1,7 @@
 import { state } from "../client.js";
 import { get_formEl } from "../dom.js";
 import { sendVidRequest } from "../userFunctions.js";
-import { getTheme, navigate, toggleTheme } from "../utility.js";
+import { getTheme, logout, navigate, toggleTheme, updateThemeIcon } from "../utility.js";
 
 export default function Dashboard() {
   // get color theme
@@ -10,8 +10,8 @@ export default function Dashboard() {
   dashboardDiv.className = "container py-1 d-flex flex-column justify-content-center";
   dashboardDiv.innerHTML = `    
   <nav class="navbar bg-body">
-        <div id="toggleTheme" class="btn">
-            <span class="material-icons-outlined">${themeMode === "dark" ? "light_mode" : "dark_mode"}</span>
+        <div id="toggleTheme" class="btn d-flex align-itmes-center">
+            <span class="material-icons-outlined" style="pointer-events:none">${themeMode === "dark" ? "light_mode" : "dark_mode"}</span>
         </div>
         <button id="logoutBtn" type="button" class="btn btn-outline-danger">Logout</button>
     </nav>
@@ -110,20 +110,22 @@ export default function Dashboard() {
 }
 
 function dashboardViewUtils() {
+  // request form event listener
   const formEl = get_formEl();
   formEl.addEventListener("submit", (e) => {
     e.preventDefault();
     sendVidRequest(e);
   });
+  // theme button event listener
   const themeBtn = document.getElementById("toggleTheme");
   themeBtn.addEventListener("click", (e) => {
     toggleTheme();
+    updateThemeIcon(e.target.querySelector("span.material-icons-outlined"));
   });
+  // logout event listener
   const logoutBtn = document.getElementById("logoutBtn");
   logoutBtn.addEventListener("click", (e) => {
-    state.user = "";
-    state.userId = "";
-    navigate("/");
+    logout();
   });
 }
 

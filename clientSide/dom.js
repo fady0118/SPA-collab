@@ -5,3 +5,5 @@ export const get_signupBtn = ()=> document.querySelector("#loginForm #signupBtn"
 export const get_signupLink = ()=> document.querySelector("#loginForm #login2Register");
 export const get_loginLink = ()=> document.querySelector("#loginForm #Register2login");
 export const get_requestsContainer = ()=> document.getElementById("listOfRequests");
+export const get_loginFormHeader = ()=> document.querySelector("#loginFormHeader");
+export const get_loginServerNotice = ()=> document.getElementById("loginServerError");

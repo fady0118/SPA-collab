@@ -1,5 +1,4 @@
-// client.js
-import { autodetectColorTheme, checkUserId, displayDashboard, navigate } from "./utility.js";
+import { autodetectColorTheme, checkUserId, navigate } from "./utility.js";
 import router from "./router.js";
 // Global states and elements
 export const state = {
