@@ -5,7 +5,6 @@ import { state } from "./client.js";
 import { displayDashboard } from "./utility.js";
 
 async function renderLogin() {
-  console.log('router render login')
   app.innerHTML = "";
   app.appendChild(Login());
   // element definitions & event listeners
@@ -13,7 +12,6 @@ async function renderLogin() {
 }
 
 async function renderDashboard() {
-  console.log('router render dashboard')
   // render the view
   app.innerHTML = "";
   app.appendChild(Dashboard());
@@ -31,8 +29,6 @@ export default async function router() {
   }
   // get the path after #
   const hash = location.hash.slice(1) || "/";
-  // console.log(hash)
-  console.log(window.location)
   // const view = routes[hash];
   if (hash === "/") {
     // render the view

@@ -28,7 +28,6 @@ async function signInRequest(e) {
     return;
   }
   // update the state
-  console.log('user Exists')
   state.user = user;
   state.userId = user._id;
   // navigate to dashboard
@@ -73,7 +72,6 @@ async function sendVidRequest(e) {
 async function updateVote(request_id, e) {
   // the button name is the same as the vote_type so we can use it
   const vote_type = e.target.name;
-  console.log({ vote_type });
   try {
     // send the update request
     const response = await fetch(`http://localhost:4000/video-request/vote/${request_id}`, {

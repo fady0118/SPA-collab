@@ -208,8 +208,11 @@ function debounce(callback, delay = 300) {
 }
 // debounce search calls the debounce function and passes the render function and a delay of 500ms
 // the render function is what handles updating the requests and rendering them
-const debounceSearch = debounce(async (sortType, searchTerm) => {
-  await renderSortedVidReqs(sortType, searchTerm, state.filterBy);
+const debounceSearch = debounce(async (sortType, searchTerm, filterBy) => {
+  // we will need to replace this with a client-side sorting and then client-side rendering
+      // await renderSortedVidReqs(sortType, searchTerm, filterBy);
+    const sortedVidReqs = clientSideDataHandling(sortType, searchTerm, filterBy);
+    renderList(sortedVidReqs);
 }, 500);
 
 // create popup Element
@@ -277,11 +280,9 @@ function toggleTheme() {
   } else if (document.documentElement.getAttribute("data-bs-theme") === "light") {
     document.documentElement.setAttribute("data-bs-theme", "dark");
   }
-  console.log("toggleTheme");
 }
 // this update the icon of the them toggle button to match the opposite of the currently applied mode
 function updateThemeIcon(icon) {
-  console.log(icon);
   const theme = getTheme();
   if (theme === "dark") {
     icon.textContent = "light_mode";
@@ -299,10 +300,13 @@ function logout() {
 
 // this runs when client side checks pass but the user is not found in the db
 function loginServerFail() {
+  // DOM elements
   const notFoundNotice = get_loginServerNotice()
   const loginInputFields = get_signInFormEl().querySelectorAll('input');
+  // add eventlisteners
   loginInputFields.forEach(input=>{
     input.classList.add("border-danger")
+    
     input.addEventListener("input",(e)=>{
       loginInputFields.forEach(element=>{
         notFoundNotice.classList.add("d-none")
@@ -313,6 +317,28 @@ function loginServerFail() {
   notFoundNotice.classList.remove("d-none")
   notFoundNotice.innerText = `Could not find that user. try again`;
 }
+
+// this function will give a client-side option for sorting, filtering & searching
+function clientSideDataHandling (sortBy, searchTerm, filterBy){
+  let requestsData = state.requestsList;
+  // 1. searching
+  if(searchTerm){
+    requestsData = requestsData.filter(request=> request.topic_title.toLowerCase().includes(searchTerm.toLowerCase()))
+  }
+  // 2. filtering
+  if(filterBy!=="all"){
+    requestsData = requestsData.filter(request=>request.status === filterBy)
+  }
+  // 3. sorting
+  if(sortBy === "New First"){
+    requestsData = requestsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } else if (sortBy === "Top Voted First"){
+    requestsData = requestsData.sort((a, b) => b.votes["ups"].length - b.votes["downs"].length - (a.votes["ups"].length - a.votes["downs"].length));
+  }
+  return requestsData;
+}
+
+
 export {
   renderList,
   displayDashboard,
@@ -334,4 +360,5 @@ export {
   updateThemeIcon,
   logout,
   loginServerFail,
+  clientSideDataHandling,
 };
