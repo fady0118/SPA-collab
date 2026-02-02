@@ -1,10 +1,11 @@
 import { updateVote } from "./userFunctions.js";
 import { deleteRequest, statusChange } from "./adminFunctions.js";
-import { getThumbnail, updateVideoRefLink } from "./utility.js";
+import { getAllVidReqs, getThumbnail, updateVideoRefLink } from "./utility.js";
 import { state } from "./client.js";
 
 // create video request element with all its functionality
 function getSingleVidReq(request, role = "user") {
+  console.log(request)
   let date = new Date(request.createdAt);
   const dateFormat = `${date.toLocaleDateString("en-US", { weekday: "short" })} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
   const statusArray = ["new", "planned", "done"];
@@ -152,7 +153,7 @@ function getSingleVidReq(request, role = "user") {
 
     linkSaveBtn.addEventListener("click", async () => {
       const videoRefValue = videoRefEl.querySelector("input[type='text']").value;
-      const videoRefLinkValue = await updateVideoRefLink(request._id, state.userId, videoRefValue);
+      const videoRefLinkValue = await updateVideoRefLink(request._id, videoRefValue);
 
       // update video link and thumbnail
       if (videoRefLinkValue.video_link !== "") {
@@ -175,7 +176,7 @@ function getSingleVidReq(request, role = "user") {
         requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
       }
       // update requestsList
-      state.requestsList = await getSortedVidReqs();
+      state.requestsList = await getAllVidReqs();
     });
   }
   return requestEl;

@@ -26,7 +26,7 @@ This repository is a small full‑stack project using Vanilla JavaScript for the
 - Upvote / downvote requests (unique per user)
 - Admin (super user) controls: change request status, delete requests, add final video link
 - Light / dark theme toggle, search, sort and filter on the request list
-- Simple authentication via `userId` in request bodies (see authMiddleware section)
+- Authentication via `JWT` created at login or register and lasts 24h or until logout
 
 ---
 ### Quickstart (Local)
@@ -59,5 +59,4 @@ you can use
 
 #### Notes
 
-- The project uses a simple `authMiddleware` that expects `userId` in request bodies. This is intentionally minimal for demo purposes but NOT secure for production.
 - The `package.json` `dev` script uses `--env-file` which may not work on all Node versions. Use the alternatives above (dotenv or dotenv-cli) or update `package.json` to use `dotenv-cli` or `nodemon`.

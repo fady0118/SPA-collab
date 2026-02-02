@@ -79,6 +79,9 @@ Content-Type: application/json
     "author_name":"henryFord",
     "author_email":"GigaFord@mail.com"
 }
+### logout
+GET  http://localhost:4000/user/logout 
+
 ### get all users
 GET http://localhost:4000/user
 ### get user by id

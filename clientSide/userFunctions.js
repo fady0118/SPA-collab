@@ -44,7 +44,7 @@ async function sendVidRequest(e) {
   const requestsContainer = get_requestsContainer();
 
   const formData = new FormData(formEl);
-  formData.append("userId", state.userId);
+  // formData.append("userId", state.userId);
   const validationErrors = checkTopicFormValidity(formData);
   if (validationErrors) {
     return;
@@ -77,7 +77,7 @@ async function updateVote(request_id, e) {
     const response = await fetch(`http://localhost:4000/video-request/vote/${request_id}`, {
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
-      body: JSON.stringify({ vote_type: vote_type, userId: state.userId }),
+      body: JSON.stringify({ vote_type: vote_type }),
     });
     const data = await response.json();
 

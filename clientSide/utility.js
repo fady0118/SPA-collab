@@ -6,24 +6,21 @@ import { getSingleVidReq } from "./videoReqTemp.js";
 // grabs state parameters (searchTerm, filterBy) and fetches the data from db
 // the server then returns the requests that pass the searchTerm & status-filter
 // and sorts them by the sortBy parameter (new first, top voted)
-async function getSortedVidReqs(sortBy = state.sortBy, searchTerm = state.searchTerm, filterBy = state.filterBy) {
-  const sortByQuery = `sortBy=${sortBy}`;
-  const searchTermQuery = searchTerm ? `&topic_title=${searchTerm}` : "";
-  const filterByQuery = `&filterBy=${filterBy}`;
-  const response = await fetch(`http://localhost:4000/video-request?${sortByQuery}${filterByQuery}${searchTermQuery}`);
+async function getAllVidReqs() {
+  const response = await fetch(`http://localhost:4000/video-request`);
   return await response.json();
 }
 
-// render sorted requests takes sortBy and searchTerm as parameters, makes the api call
-// the renderList fn is what calls the render function to render the fetched requests
-async function renderSortedVidReqs(sortBy, searchTerm, filterBy = "all") {
-  const sortedRequests = await getSortedVidReqs(sortBy, searchTerm, filterBy);
-  renderList(sortedRequests, state.user.role);
-}
+// // render sorted requests takes sortBy and searchTerm as parameters, makes the api call
+// // the renderList fn is what calls the render function to render the fetched requests
+// async function renderSortedVidReqs(sortBy, searchTerm, filterBy = "all") {
+//   const sortedRequests = await getAllVidReqs(sortBy, searchTerm, filterBy);
+//   renderList(sortedRequests, state.user.role);
+// }
 
 // render requests
 // takes an array of the requests to render, and the role of the user since admin extra controls and user gets request submission form
-function renderList(list, role = "user") {
+function renderList(list, role = state.user.role) {
   // DOM elements
   const requestsContainer = get_requestsContainer();
   requestsContainer.innerHTML = "";
@@ -39,8 +36,10 @@ async function displayDashboard(user) {
     return;
   }
   // display admin-user common stuff
-  state.requestsList = await getSortedVidReqs();
-  renderList(state.requestsList, user.role);
+  // getAllSortedVidReqs
+  state.requestsList = await getAllVidReqs();
+  const filteredRequestsData = clientSideDataHandling(state.sortBy, state.searchTerm, state.filterBy)
+  renderList(filteredRequestsData, user.role);
   const welcomeDashboard = document.getElementById("welcomeDashboard");
 
   // display admin stuff
@@ -71,11 +70,11 @@ function navigate(path) {
 
 // update video link function
 // make request to update the videoRef.link value of a request
-async function updateVideoRefLink(requestId, userId, videoRefValue) {
+async function updateVideoRefLink(requestId, videoRefValue) {
   const response = await fetch(`http://localhost:4000/video-request/videoRef/${requestId}`, {
     headers: { "Content-Type": "application/json" },
     method: "PATCH",
-    body: JSON.stringify({ userId, link: videoRefValue }),
+    body: JSON.stringify({ link: videoRefValue }),
   });
   return await response.json();
 }
@@ -292,9 +291,16 @@ function updateThemeIcon(icon) {
 }
 
 // logout function
-function logout() {
+async function logout() {
+  console.log("logout client")
+  // clear JWT cookie
+  await fetch("http://localhost:4000/user/logout", {
+    method: "POST"
+  }); 
+  // clear state
   state.user = "";
   state.userId = "";
+  // navigate to home
   navigate("/");
 }
 
@@ -349,8 +355,7 @@ export {
   checkUserId,
   swapLoginToSignup,
   swapSignupToLogin,
-  getSortedVidReqs,
-  renderSortedVidReqs,
+  getAllVidReqs,
   debounceSearch,
   createPopup,
   getThumbnail,

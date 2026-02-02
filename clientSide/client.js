@@ -15,6 +15,20 @@ export const state = {
 window.addEventListener("hashchange", router)
 
 document.addEventListener("DOMContentLoaded", async function () {
+  async function checkToken(){
+    const response = await fetch("http://localhost:4000/token");
+    const data = await response.json();
+    if(!data){
+      return
+    }
+    return data;
+  }
+  const decodedToken = await checkToken();
+  if(decodedToken.user){
+    console.log(decodedToken)
+    state.user = decodedToken.user;
+    state.userId = decodedToken.user._id;
+  }
   // set doc mode accodring to user preference
   autodetectColorTheme()
   router();

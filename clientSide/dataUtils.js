@@ -1,5 +1,5 @@
 import { state } from "./client.js";
-import { clientSideDataHandling, debounceSearch, getSortedVidReqs, renderList, renderSortedVidReqs } from "./utility.js";
+import { clientSideDataHandling, debounceSearch, renderList } from "./utility.js";
 // data utilities (sort, search, filter)
 export default function dataUtils() {
   // button elements for all 3
@@ -16,6 +16,7 @@ export default function dataUtils() {
           // await renderSortedVidReqs(state.sortBy, state.searchTerm, state.filterBy);
       // we will transition to a client side alternative to minimize server api calls
       const sortedList = clientSideDataHandling(state.sortBy, state.searchTerm, state.filterBy);
+      console.log(sortedList)
       renderList(sortedList)
       sortingElms.forEach((element) => {
         element.classList.remove("active");

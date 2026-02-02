@@ -26,15 +26,17 @@ export default async function router() {
   if (!state.userId) {
     await renderLogin();
     return;
-  }
-  // get the path after #
-  const hash = location.hash.slice(1) || "/";
-  // const view = routes[hash];
-  if (hash === "/") {
-    // render the view
-    await renderLogin();
-  } else if (hash === "/dashboard") {
-    // render the view
+  } else {
     await renderDashboard();
-  } 
+  }
+      // // get the path after #
+      // const hash = location.hash.slice(1) || "/";
+      // // const view = routes[hash];
+      // if (hash === "/") {
+      //   // render the view
+      //   await renderLogin();
+      // } else if (hash === "/dashboard") {
+      //   // render the view
+      //   await renderDashboard();
+      // } 
 }

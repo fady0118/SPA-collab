@@ -17,12 +17,8 @@ async function deleteRequest(request) {
   async function deletePopupHandle(e) {
     const choice = e.target.innerHTML;
     if (choice === "Confirm") {
-      const response = await fetch(`http://localhost:4000/video-request/${request._id}`, {
+      await fetch(`http://localhost:4000/video-request/${request._id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: state.userId,
-        }),
       });
       // update using showdashboard which fetches the data and calls renderlist
       await displayDashboard(state.user);
@@ -57,7 +53,6 @@ function statusChange(request, requestEl, oldStatus, newStatus) {
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
         body: JSON.stringify({
-          userId: state.userId,
           status: newStatus,
         }),
       });
@@ -65,7 +60,7 @@ function statusChange(request, requestEl, oldStatus, newStatus) {
 
       // we need to clear the video link if the status is changed from done to planned/new
       if (newStatus !== "done" && request.video_ref.link) {
-        await updateVideoRefLink(request._id, state.userId, "");
+        await updateVideoRefLink(request._id, "");
       }
           
       // update using displayDashboard which fetches the data and calls renderlist function

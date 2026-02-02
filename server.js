@@ -3,8 +3,9 @@ import cors from "cors";
 import { connectDB } from "./models/mongo.config.js";
 import { createRequest, getAllVideoRequests, getVideoRequestById, updateVideoRequest, deleteVideoRequest, updateVoteForRequest, addVideoRef, updateVideoStatus } from "./data/videoReq.data.js";
 import multer from "multer";
-import { createUser, getAllUsers, getUserById, loginUser } from "./data/user.data.js";
+import { createUser, getAllUsers, getUserById, loginUser, logoutUser } from "./data/user.data.js";
 import authMiddleware from "./middleware/authMiddleware.js";
+import cookieParser from "cookie-parser";
 
 
 const PORT = process.env.PORT || 7334;
@@ -17,10 +18,17 @@ app.use(express.static("clientSide")); // serve static files in public
 // parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 // homepage
 app.get("/", (req, res) => {
   res.send("hello");
+});
+
+app.get("/token", authMiddleware, (req, res) => {
+  if(req.user){
+    return res.json({user:req.user})
+  }
 });
 
 // videoReq routes
@@ -37,6 +45,7 @@ app.get("/user/", authMiddleware, getAllUsers)
 app.post("/user/checkId", authMiddleware, getUserById)
 app.post("/user/signup", upload.none(), createUser);
 app.post("/user/login", upload.none(), loginUser);
+app.post("/user/logout", logoutUser);
 
 const startServer = async () => {
   connectDB();
