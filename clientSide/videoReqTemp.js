@@ -1,16 +1,15 @@
 import { updateVote } from "./userFunctions.js";
 import { deleteRequest, statusChange } from "./adminFunctions.js";
-import { getAllVidReqs, getThumbnail, updateVideoRefLink } from "./utility.js";
+import { getAllVidReqs, getThumbnail, navigate, updateVideoRefLink } from "./utility.js";
 import { state } from "./client.js";
 
 // create video request element with all its functionality
 function getSingleVidReq(request, role = "user") {
-  console.log(request)
   let date = new Date(request.createdAt);
   const dateFormat = `${date.toLocaleDateString("en-US", { weekday: "short" })} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
   const statusArray = ["new", "planned", "done"];
   const vidRequestTemplate = `
-    <div class="card mb-3 flex-fill bg-body-secondary text-body border border-dark-subtle">
+    <div id="${request._id}" class="card mb-3 flex-fill bg-body-secondary text-body border border-dark-subtle">
               ${
                 role === "super user"
                   ? `
@@ -103,7 +102,10 @@ function getSingleVidReq(request, role = "user") {
       requestEl.querySelector("#video_thumbnail").style.backgroundPosition = "center";
     }
   }
-
+  // request eventlistener
+  requestEl.addEventListener("click",(e)=>{
+    navigate(`/req/${request._id}`)
+  })
   // admin header elements
   if (state.user.role === "super user") {
     // videoRef Input on initial request render

@@ -52,10 +52,11 @@ const getVideoRequestById = async (req, res) => {
   const video_Id = req.params.id;
   try {
     const video = await VideoReq.find({ _id: video_Id });
-    if (!video) {
+    console.log(video)
+    if (!video.length) {
       return res.status(404).json("request not found");
     }
-    res.status(200).json(video);
+    res.status(200).json(video[0]);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

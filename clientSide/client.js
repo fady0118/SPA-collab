@@ -25,7 +25,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
   const decodedToken = await checkToken();
   if(decodedToken.user){
-    console.log(decodedToken)
     state.user = decodedToken.user;
     state.userId = decodedToken.user._id;
   }
