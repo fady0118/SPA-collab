@@ -39,7 +39,7 @@ function getSingleVidReq(request, role = "user") {
               }
                 <div class="card-body d-flex flex-row justify-content-between align-items-center">
                     <div class="d-flex flex-column order-1" style="width:35%">
-                        <h3>${request.topic_title}</h3>
+                        <h3 class="topic_title text-primary" style="width:fit-content;cursor:pointer">${request.topic_title}</h3>
                         <p class="mb-2">${request.topic_details}</p>
                         <p class="mb-0">
                             ${request.expected_result ? `<strong>Expected results:</strong> ${request.expected_result}` : ""}
@@ -56,9 +56,9 @@ function getSingleVidReq(request, role = "user") {
                     }
                     <div class="d-flex align-items-center order-3">
                       <div class="d-flex flex-column text-center">
-                          <a class="btn upvote-btn ${request.votes["ups"].includes(state.userId) ? "voteBtnStyle" : ""}" name="ups">🢁</a>
+                          <a class="btn upvote-btn vote-dashboard ${request.votes["ups"].includes(state.userId) ? "voteBtnStyle" : ""}" name="ups">🢁</a>
                           <h3 class="voteScore">${request.votes["ups"].length - request.votes["downs"].length}</h3>
-                          <a class="btn downvote-btn ${request.votes["downs"].includes(state.userId) ? "voteBtnStyle" : ""}" name="downs">🢃</a>
+                          <a class="btn downvote-btn vote-dashboard ${request.votes["downs"].includes(state.userId) ? "voteBtnStyle" : ""}" name="downs">🢃</a>
                       </div>
                     </div>
                 </div>
@@ -103,7 +103,7 @@ function getSingleVidReq(request, role = "user") {
     }
   }
   // request eventlistener
-  requestEl.addEventListener("click",(e)=>{
+  requestEl.querySelector('.topic_title').addEventListener("click",(e)=>{
     navigate(`/req/${request._id}`)
   })
   // admin header elements

@@ -38,7 +38,7 @@ async function displayDashboard(user) {
   // display admin-user common stuff
   // getAllSortedVidReqs
   state.requestsList = await getAllVidReqs();
-  const filteredRequestsData = clientSideDataHandling(state.sortBy, state.searchTerm, state.filterBy)
+  const filteredRequestsData = clientSideDataHandling(state.sortBy, state.searchTerm, state.filterBy);
   renderList(filteredRequestsData, user.role);
   const welcomeDashboard = document.getElementById("welcomeDashboard");
 
@@ -209,9 +209,9 @@ function debounce(callback, delay = 300) {
 // the render function is what handles updating the requests and rendering them
 const debounceSearch = debounce(async (sortType, searchTerm, filterBy) => {
   // we will need to replace this with a client-side sorting and then client-side rendering
-      // await renderSortedVidReqs(sortType, searchTerm, filterBy);
-    const sortedVidReqs = clientSideDataHandling(sortType, searchTerm, filterBy);
-    renderList(sortedVidReqs);
+  // await renderSortedVidReqs(sortType, searchTerm, filterBy);
+  const sortedVidReqs = clientSideDataHandling(sortType, searchTerm, filterBy);
+  renderList(sortedVidReqs);
 }, 500);
 
 // create popup Element
@@ -292,11 +292,11 @@ function updateThemeIcon(icon) {
 
 // logout function
 async function logout() {
-  console.log("logout client")
+  console.log("logout client");
   // clear JWT cookie
   await fetch("http://localhost:4000/user/logout", {
-    method: "POST"
-  }); 
+    method: "POST",
+  });
   // clear state
   state.user = "";
   state.userId = "";
@@ -307,43 +307,71 @@ async function logout() {
 // this runs when client side checks pass but the user is not found in the db
 function loginServerFail() {
   // DOM elements
-  const notFoundNotice = get_loginServerNotice()
-  const loginInputFields = get_signInFormEl().querySelectorAll('input');
+  const notFoundNotice = get_loginServerNotice();
+  const loginInputFields = get_signInFormEl().querySelectorAll("input");
   // add eventlisteners
-  loginInputFields.forEach(input=>{
-    input.classList.add("border-danger")
-    
-    input.addEventListener("input",(e)=>{
-      loginInputFields.forEach(element=>{
-        notFoundNotice.classList.add("d-none")
-        element.classList.remove("border-danger")
-      })
-    })
-  })
-  notFoundNotice.classList.remove("d-none")
+  loginInputFields.forEach((input) => {
+    input.classList.add("border-danger");
+
+    input.addEventListener("input", (e) => {
+      loginInputFields.forEach((element) => {
+        notFoundNotice.classList.add("d-none");
+        element.classList.remove("border-danger");
+      });
+    });
+  });
+  notFoundNotice.classList.remove("d-none");
   notFoundNotice.innerText = `Could not find that user. try again`;
 }
 
 // this function will give a client-side option for sorting, filtering & searching
-function clientSideDataHandling (sortBy, searchTerm, filterBy){
+function clientSideDataHandling(sortBy, searchTerm, filterBy) {
   let requestsData = state.requestsList;
   // 1. searching
-  if(searchTerm){
-    requestsData = requestsData.filter(request=> request.topic_title.toLowerCase().includes(searchTerm.toLowerCase()))
+  if (searchTerm) {
+    requestsData = requestsData.filter((request) => request.topic_title.toLowerCase().includes(searchTerm.toLowerCase()));
   }
   // 2. filtering
-  if(filterBy!=="all"){
-    requestsData = requestsData.filter(request=>request.status === filterBy)
+  if (filterBy !== "all") {
+    requestsData = requestsData.filter((request) => request.status === filterBy);
   }
   // 3. sorting
-  if(sortBy === "New First"){
+  if (sortBy === "New First") {
     requestsData = requestsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  } else if (sortBy === "Top Voted First"){
+  } else if (sortBy === "Top Voted First") {
     requestsData = requestsData.sort((a, b) => b.votes["ups"].length - b.votes["downs"].length - (a.votes["ups"].length - a.votes["downs"].length));
   }
   return requestsData;
 }
 
+function navbar_appContainer_Elms() {
+  // get color theme
+  const themeMode = getTheme();
+  const navbar_appContainer = document.createElement("div");
+  navbar_appContainer.className = "container-fluid py-1 d-flex flex-column justify-content-center";
+  navbar_appContainer.innerHTML = `    
+  <nav class="navbar bg-body mx-3 mt-2">
+        <div id="toggleTheme" class="btn d-flex align-itmes-center">
+            <span class="material-icons-outlined" style="pointer-events:none">${themeMode === "dark" ? "light_mode" : "dark_mode"}</span>
+        </div>
+        <button id="logoutBtn" type="button" class="btn btn-outline-danger">Logout</button>
+  </nav>
+  <div id="app_container" class="app-Content">`;
+
+  app.appendChild(navbar_appContainer);
+
+  // theme button event listener
+  const themeBtn = document.getElementById("toggleTheme");
+  themeBtn.addEventListener("click", (e) => {
+    toggleTheme();
+    updateThemeIcon(e.target.querySelector("span.material-icons-outlined"));
+  });
+  // logout event listener
+  const logoutBtn = document.getElementById("logoutBtn");
+  logoutBtn.addEventListener("click", (e) => {
+    logout();
+  });
+}
 
 export {
   renderList,
@@ -366,4 +394,5 @@ export {
   logout,
   loginServerFail,
   clientSideDataHandling,
+  navbar_appContainer_Elms,
 };

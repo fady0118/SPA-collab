@@ -2,8 +2,8 @@ import Login, { loginViewUtils } from "./views/login.js";
 import Dashboard, { dashboardViewUtils } from "./views/dashboard.js";
 import dataUtils from "./dataUtils.js";
 import { state } from "./client.js";
-import { displayDashboard } from "./utility.js";
-import singleReq from "./views/singleReq.js";
+import { displayDashboard, navbar_appContainer_Elms } from "./utility.js";
+import singleReqPage, { singleReqUtils } from "./views/singleReq.js";
 
 async function renderLogin() {
   app.innerHTML = "";
@@ -13,9 +13,13 @@ async function renderLogin() {
 }
 
 async function renderDashboard() {
-  // render the view
+  // render the navbar & app_container
   app.innerHTML = "";
-  app.appendChild(Dashboard());
+  navbar_appContainer_Elms()
+  // render the view
+  const app_container = document.getElementById("app_container")
+  app_container.innerHTML = "";
+  app_container.appendChild(Dashboard());
   // element definitions & event listeners
   dataUtils();
   dashboardViewUtils();
@@ -25,11 +29,15 @@ async function renderDashboard() {
 async function renderSingleReq(req_id) {
   // fetch the request data from db
   const response = await fetch(`http://localhost:4000/video-request/${req_id}`);
-  const data = await response.json();
-
-  // render the view
+  const request = await response.json();
+  // render the navbar & app_container
   app.innerHTML = "";
-  app.appendChild(singleReq(data));
+  navbar_appContainer_Elms()
+  // render the view
+  const app_container = document.getElementById("app_container")
+  app_container.innerHTML = "";
+  app_container.appendChild(singleReqPage(request));
+  singleReqUtils(request);
 }
 
 export default async function router() {

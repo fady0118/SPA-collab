@@ -51,8 +51,7 @@ const getAllVideoRequests = async (req, res) => {
 const getVideoRequestById = async (req, res) => {
   const video_Id = req.params.id;
   try {
-    const video = await VideoReq.find({ _id: video_Id });
-    console.log(video)
+    const video = await VideoReq.find({ _id: video_Id }).populate("author", ["author_name"]);
     if (!video.length) {
       return res.status(404).json("request not found");
     }
