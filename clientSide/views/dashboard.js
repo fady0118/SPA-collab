@@ -1,7 +1,7 @@
 import { state } from "../client.js";
 import { get_formEl } from "../dom.js";
 import { sendVidRequest } from "../userFunctions.js";
-import { getTheme, logout, toggleTheme, updateThemeIcon } from "../utility.js";
+import { getTheme, headerResizer, logout, toggleTheme, updateThemeIcon } from "../utility.js";
 
 export default function Dashboard() {
   const dashboardDiv = document.createElement("div");
@@ -67,27 +67,29 @@ export default function Dashboard() {
             </form>
             <hr />
             <h1 class="mb-4">List of requested videos</h1>
-            <div class="d-flex flex-row justify-content-sm-between  mb-2">
+            <div class="d-flex flex-lg-row flex-md-row flex-sm-column flex-xs-column flex-column mb-2
+             justify-content-lg-between justify-content-md-between
+             align-items-sm-start align-items-xs-start align-items-start">
                 <!-- sorting -->
-                <div class="btn-group" role="group" aria-label="Basic example">
-                    <button type="button" class="btn btn-primary sort_by active"
+                <div class="btn-group mb-1" role="group" aria-label="Basic example">
+                    <button type="button" class="btn btn-primary sort_by active responsive-text-b"
                         value="New First">New First</button>
-                    <button type="button" class="btn btn-primary sort_by"
+                    <button type="button" class="btn btn-primary sort_by responsive-text-b"
                         value="Top Voted First">Top Voted First</button>
                 </div>
                 <!-- filtering -->
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-primary filter_by active"
+                <div class="btn-group mb-1" role="group">
+                    <button type="button" class="btn btn-primary filter_by active responsive-text-b"
                         value="All">All</button>
-                    <button type="button" class="btn btn-primary filter_by"
+                    <button type="button" class="btn btn-primary filter_by responsive-text-b"
                         value="New">New</button>
-                    <button type="button" class="btn btn-primary filter_by"
+                    <button type="button" class="btn btn-primary filter_by responsive-text-b"
                         value="Planned">Planned</button>
-                    <button type="button" class="btn btn-primary filter_by"
+                    <button type="button" class="btn btn-primary filter_by responsive-text-b"
                         value="Done">Done</button>
                 </div>
                 <!-- searching -->
-                <div class="position-relative d-flex align-items-center">
+                <div class="position-relative d-flex align-items-center mb-1">
                     <input class="form-control mr-sm-2 bg-transparent text-white" id="searchBox"
                         type="search" placeholder="Search" aria-label="Search">
                     <button type="button" id="clearSearchBox"

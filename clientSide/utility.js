@@ -373,6 +373,10 @@ function navbar_appContainer_Elms() {
   });
 }
 
+  function headerResizer() {
+    document.querySelector("[class*='deleteBtn btn btn-danger']").textContent = window.innerWidth >= 768 ? "Delete" : "⛌";
+  }
+
 export {
   renderList,
   displayDashboard,
@@ -395,4 +399,5 @@ export {
   loginServerFail,
   clientSideDataHandling,
   navbar_appContainer_Elms,
+  headerResizer,
 };

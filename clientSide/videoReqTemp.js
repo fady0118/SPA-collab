@@ -1,6 +1,6 @@
 import { updateVote } from "./userFunctions.js";
 import { deleteRequest, statusChange } from "./adminFunctions.js";
-import { getAllVidReqs, getThumbnail, navigate, updateVideoRefLink } from "./utility.js";
+import { getAllVidReqs, getThumbnail, headerResizer, navigate, updateVideoRefLink } from "./utility.js";
 import { state } from "./client.js";
 
 // create video request element with all its functionality
@@ -13,8 +13,9 @@ function getSingleVidReq(request, role = "user") {
               ${
                 role === "super user"
                   ? `
-                <div id="super-user-header" class="card-header d-flex justify-content-between">
-                    <select class="reqStatusList text-capitalize">
+                <div id="super-user-header" class="card-header d-flex justify-content-between responsive-text-hb">
+                    <select class="reqStatusList text-capitalize
+                    col-lg-1 col-md-2 col-sm-2 col-xs-3 col-2">
                       ${statusArray.map((stat) => {
                         return `
                           <option class="text-capitalize" value="${stat}" ${stat === request.status ? "selected" : ""}>${stat}</option>
@@ -28,49 +29,61 @@ function getSingleVidReq(request, role = "user") {
                               type="text" value="${request.video_ref.link || ""}" placeholder="Add Video Link" aria-label="Search">
                           <button type="button" id="videoRefClear"
                               class="d-none bg-dark btn btn-sm clear-btn px-2 ms-2 fs-6 position-absolute top-50 end-0 translate-middle-y"
-                              aria-label="Clear search">×</button>
+                              ></button>
                         </div>
                       </div>
-                      <button id="saveVideoRef" class="d-none btn btn-light ms-1">Save</button>
+                      <button id="saveVideoRef" class="d-none btn btn-body border border-secondary ms-1">Save</button>
                     </div>
-                    <button class="deleteBtn btn btn-danger">Delete</button>
+                    <button class="deleteBtn btn btn-danger d-flex align-items-center justify-content-center text-body 
+                    px-2">Delete</button>
                 </div>`
                   : ""
               }
-                <div class="card-body d-flex flex-row justify-content-between align-items-center">
-                    <div class="d-flex flex-column order-1" style="width:35%">
-                        <h3 class="topic_title text-primary" style="width:fit-content;cursor:pointer">${request.topic_title}</h3>
-                        <p class="mb-2">${request.topic_details}</p>
-                        <p class="mb-0">
-                            ${request.expected_result ? `<strong>Expected results:</strong> ${request.expected_result}` : ""}
-                        </p>
-                    </div>
-                    ${
-                      request.video_ref.link
-                        ? `
-                        <div id="video_thumbnail" class="bg-light rounded position-relative order-2" style="aspect-ratio: 16/9;width: 15%;">
-                          <a class="d-block w-100 h-100" href="${request.video_ref.link}" target="_blank"></a>
-                          <span class="material-icons-outlined position-absolute top-50 start-50 translate-middle z-1 fs-1" style="pointer-events: none;">play_circle</span>
-                        </div>`
-                        : ""
-                    }
-                    <div class="d-flex align-items-center order-3">
-                      <div class="d-flex flex-column text-center">
-                          <a class="btn upvote-btn vote-dashboard ${request.votes["ups"].includes(state.userId) ? "voteBtnStyle" : ""}" name="ups">🢁</a>
-                          <h3 class="voteScore">${request.votes["ups"].length - request.votes["downs"].length}</h3>
-                          <a class="btn downvote-btn vote-dashboard ${request.votes["downs"].includes(state.userId) ? "voteBtnStyle" : ""}" name="downs">🢃</a>
+
+                <div class="card-body d-flex flex-column">
+                    <h3 class="topic_title text-primary" style="width:fit-content;cursor:pointer">${request.topic_title}</h3>
+                    <div class="d-flex flex-row flex-wrap
+                    justify-content-lg-between justify-content-md-between justify-content-sm-center justify-content-xs-center justify-content-center">
+                      <div class="d-flex flex-column order-1 
+                      col-lg-4 col-md-4 col-sm-11 col-xs-11 col-11"> 
+                          <p class="mb-2">${request.topic_details}</p>
+                          <p class="mb-0">
+                              ${request.expected_result ? `<strong>Expected results:</strong> ${request.expected_result}` : ""}
+                          </p>
+                      </div>
+                      ${
+                        request.video_ref.link
+                          ? `
+                          <div id="video_thumbnail" class="bg-light rounded position-relative 
+                          order-lg-2 order-md-2 order-sm-3 order-xs-3 order-3
+                          col-lg-3 col-md-4 col-sm-9 col-xs-9 col-9" 
+                          style="aspect-ratio: 16/9;">
+                            <a class="d-block w-100 h-100" href="${request.video_ref.link}" target="_blank"></a>
+                            <span class="material-icons-outlined position-absolute top-50 start-50 translate-middle z-1 fs-1" style="pointer-events: none;">play_circle</span>
+                          </div>`
+                          : ""
+                      }
+                      <div class="d-flex justify-content-end
+                      order-lg-3 order-md-3 order-sm-2 order-xs-2 order-2 
+                      col-lg-1 col-md-1 col-sm-1 col-xs-1 col-1">
+                        <div class="d-flex flex-column text-center">
+                            <a class="btn upvote-btn vote-dashboard ${request.votes["ups"].includes(state.userId) ? "voteBtnStyle" : ""}" name="ups">🢁</a>
+                            <h3 class="voteScore">${request.votes["ups"].length - request.votes["downs"].length}</h3>
+                            <a class="btn downvote-btn vote-dashboard ${request.votes["downs"].includes(state.userId) ? "voteBtnStyle" : ""}" name="downs">🢃</a>
+                        </div>
                       </div>
                     </div>
                 </div>
                 <div
                     class="card-footer d-flex flex-row justify-content-between">
-                    <div>
-                        <span class="request-status text-info">${request.status}</span>
-                        &bullet; added by <strong>${request.author.author_name}</strong> on
-                        <strong>${dateFormat}</strong>
+                    <div class="col-8">
+                        <span class="request-status text-info ">${request.status}</span>
+                        <span class="request-status text-body responsive-text-hb">&bullet; added by <strong>${request.author.author_name}</strong> on
+                        <strong>${dateFormat}</strong></span>
+                        
                     </div>
                     <div
-                        class="d-flex justify-content-center flex-column 408ml-auto mr-2">
+                        class=" d-flex justify-content-center flex-column 408ml-auto mr-2">
                         <div class="badge text-bg-info text-dark">
                             ${request.target_level}
                         </div>
@@ -93,6 +106,11 @@ function getSingleVidReq(request, role = "user") {
     });
   });
 
+  // windowSize eventlistener
+  window.addEventListener("resize", () => {
+    headerResizer()
+  });
+
   // fetch and add thumbnail to requests with video links
   if (request.video_ref.link !== "") {
     const thumbnail = getThumbnail(request.video_ref.link);
@@ -103,9 +121,9 @@ function getSingleVidReq(request, role = "user") {
     }
   }
   // request eventlistener
-  requestEl.querySelector('.topic_title').addEventListener("click",(e)=>{
-    navigate(`/req/${request._id}`)
-  })
+  requestEl.querySelector(".topic_title").addEventListener("click", (e) => {
+    navigate(`/req/${request._id}`);
+  });
   // admin header elements
   if (state.user.role === "super user") {
     // videoRef Input on initial request render

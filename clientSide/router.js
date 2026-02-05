@@ -2,7 +2,7 @@ import Login, { loginViewUtils } from "./views/login.js";
 import Dashboard, { dashboardViewUtils } from "./views/dashboard.js";
 import dataUtils from "./dataUtils.js";
 import { state } from "./client.js";
-import { displayDashboard, navbar_appContainer_Elms } from "./utility.js";
+import { displayDashboard, headerResizer, navbar_appContainer_Elms } from "./utility.js";
 import singleReqPage, { singleReqUtils } from "./views/singleReq.js";
 
 async function renderLogin() {
@@ -24,6 +24,7 @@ async function renderDashboard() {
   dataUtils();
   dashboardViewUtils();
   await displayDashboard(state.user);
+  headerResizer()
 }
 
 async function renderSingleReq(req_id) {
