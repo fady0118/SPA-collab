@@ -262,23 +262,32 @@ function getTheme() {
 }
 // runs on initial load detects user preferred color mode and sets the theme to match it
 function autodetectColorTheme() {
-  const prefersDarkMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const htmlEl = document.documentElement;
-  if (prefersDarkMode) {
-    // User prefers dark theme
-    htmlEl.setAttribute("data-bs-theme", "dark");
+  if (!state.theme) {
+    const prefersDarkMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (prefersDarkMode) {
+      // User prefers dark theme
+      document.documentElement.setAttribute("data-bs-theme", "dark");
+      state.theme = "dark";
+    } else {
+      // User prefers light theme or no preference is set
+      document.documentElement.setAttribute("data-bs-theme", "light");
+      state.theme = "light";
+    }
   } else {
-    // User prefers light theme or no preference is set
-    htmlEl.setAttribute("data-bs-theme", "light");
+    document.documentElement.setAttribute("data-bs-theme", state.theme);
   }
 }
+
 // switches dark/light theme
 function toggleTheme() {
   if (document.documentElement.getAttribute("data-bs-theme") === "dark") {
     document.documentElement.setAttribute("data-bs-theme", "light");
+    state.theme = "light";
   } else if (document.documentElement.getAttribute("data-bs-theme") === "light") {
     document.documentElement.setAttribute("data-bs-theme", "dark");
+    state.theme = "dark";
   }
+  storeState()
 }
 // this update the icon of the them toggle button to match the opposite of the currently applied mode
 function updateThemeIcon(icon) {
@@ -373,9 +382,26 @@ function navbar_appContainer_Elms() {
   });
 }
 
-  function headerResizer() {
+function headerResizer() {
+  if(state.user.role==="super user"){
     document.querySelector("[class*='deleteBtn btn btn-danger']").textContent = window.innerWidth >= 768 ? "Delete" : "⛌";
   }
+}
+
+function storeState() {
+  sessionStorage.setItem(
+    "state",
+    JSON.stringify({
+      sortBy: state.sortBy,
+      searchTerm: state.searchTerm,
+      filterBy: state.filterBy,
+      theme: state.theme,
+    }),
+  );
+}
+function getState() {
+  return sessionStorage.getItem("state");
+}
 
 export {
   renderList,
@@ -400,4 +426,6 @@ export {
   clientSideDataHandling,
   navbar_appContainer_Elms,
   headerResizer,
+  storeState,
+  getState,
 };

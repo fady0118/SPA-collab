@@ -5,7 +5,7 @@ import { getTheme, headerResizer, logout, toggleTheme, updateThemeIcon } from ".
 
 export default function Dashboard() {
   const dashboardDiv = document.createElement("div");
-  dashboardDiv.classList = "container"
+  dashboardDiv.classList = "container";
   dashboardDiv.innerHTML = `    
             <div id="welcomeDashboard"></div>
             <form id="requestForm" class="mt-4" novalidate>
@@ -90,7 +90,7 @@ export default function Dashboard() {
                 </div>
                 <!-- searching -->
                 <div class="position-relative d-flex align-items-center mb-1">
-                    <input class="form-control mr-sm-2 bg-transparent text-white" id="searchBox"
+                    <input class="form-control mr-sm-2 bg-transparent text-body" id="searchBox"
                         type="search" placeholder="Search" aria-label="Search">
                     <button type="button" id="clearSearchBox"
                         class="btn btn-sm clear-btn px-2 fs-6 text-white position-absolute top-50 end-0 translate-middle-y"
@@ -102,6 +102,30 @@ export default function Dashboard() {
 }
 
 function dashboardViewUtils() {
+  function persistState() {
+    const sortingElms = document.querySelectorAll(".sort_by");
+    const searchElm = document.getElementById("searchBox");
+    const filterElms = document.querySelectorAll(".filter_by");
+    // check the state.sortBy and reflect it in the UI
+    const stateSort = [...sortingElms].find((elm) => elm.value === state.sortBy);
+    stateSort.click();
+    sortingElms.forEach((elm) => {
+      elm.classList.remove("active");
+    });
+    stateSort.classList.add("active");
+    // check the state.searchTerm and reflect it in the UI
+    if (state.searchTerm) {
+      searchElm.value = state.searchTerm;
+    }
+    // check the state.filterBy and reflect it in the UI
+    const stateFilter = [...filterElms].find((elm) => elm.value.toLowerCase() === state.filterBy);
+    stateFilter.click();
+    filterElms.forEach((elm) => {
+      elm.classList.remove("active");
+    });
+    stateFilter.classList.add("active");
+  }
+  persistState();
   // request form event listener
   const formEl = get_formEl();
   formEl.addEventListener("submit", (e) => {

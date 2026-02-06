@@ -1,5 +1,5 @@
 import { state } from "./client.js";
-import { clientSideDataHandling, debounceSearch, renderList } from "./utility.js";
+import { clientSideDataHandling, debounceSearch, renderList, storeState } from "./utility.js";
 // data utilities (sort, search, filter)
 export default function dataUtils() {
   // button elements for all 3
@@ -11,13 +11,17 @@ export default function dataUtils() {
   sortingElms.forEach((elm) => {
     elm.addEventListener("click", async (e) => {
       e.preventDefault();
+
+      if (e.target.value === state.sortBy) {
+        return;
+      }
       state.sortBy = e.target.value;
+      storeState();
       // replace getSortedVidReqs which fetches the data from the db using any (sort, filter, search) requirements
-          // await renderSortedVidReqs(state.sortBy, state.searchTerm, state.filterBy);
+      // await renderSortedVidReqs(state.sortBy, state.searchTerm, state.filterBy);
       // we will transition to a client side alternative to minimize server api calls
       const sortedList = clientSideDataHandling(state.sortBy, state.searchTerm, state.filterBy);
-      console.log(sortedList)
-      renderList(sortedList)
+      renderList(sortedList);
       sortingElms.forEach((element) => {
         element.classList.remove("active");
       });
@@ -31,12 +35,14 @@ export default function dataUtils() {
   // if the user enters another input in that 500ms period the previous api call won't trigger
   searchElm.addEventListener("input", async (e) => {
     state.searchTerm = e.target.value;
+    storeState();
     debounceSearch(state.sortBy, state.searchTerm, state.filterBy);
   });
   // a clear button that resets the searchbox as well as the requests list by making an empty search
   document.getElementById("clearSearchBox").addEventListener("click", (e) => {
     searchElm.value = "";
     state.searchTerm = undefined;
+    storeState();
     debounceSearch(state.sortBy, state.searchTerm, state.filterBy);
   });
 
@@ -46,13 +52,13 @@ export default function dataUtils() {
       // update state
       if (e.target.value.toLowerCase() === state.filterBy) {
         return;
-      } else {
-        // filteredList = sortedRequestsList.filter((request) => request.status.toLowerCase() === e.target.value.toLowerCase());
-        state.filterBy = e.target.value.toLowerCase();
       }
+      state.filterBy = e.target.value.toLowerCase();
+      storeState();
+
       // update requestsList
       // filtering and rendering
-          // const filteredRequestsList = await getSortedVidReqs(state.sortBy, state.searchTerm, state.filterBy);
+      // const filteredRequestsList = await getSortedVidReqs(state.sortBy, state.searchTerm, state.filterBy);
       const filteredRequestsList = clientSideDataHandling(state.sortBy, state.searchTerm, state.filterBy);
       renderList(filteredRequestsList, state.user.role);
       // styling buttons
