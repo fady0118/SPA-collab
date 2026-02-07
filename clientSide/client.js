@@ -19,10 +19,7 @@ if(savedState){
 
 // add router event listeners
 // window.addEventListener("load", router)
-window.addEventListener("hashchange", ()=>{
-  console.log('hash change', location.hash)
-  router()
-})
+window.addEventListener("hashchange", router)
 
 document.addEventListener("DOMContentLoaded", async function () {
   async function checkToken(){
