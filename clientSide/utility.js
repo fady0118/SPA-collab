@@ -64,7 +64,6 @@ async function displayDashboard(user) {
 
 // change hash-path
 function navigate(path) {
-  location.hash = "";
   location.hash = path;
 }
 
