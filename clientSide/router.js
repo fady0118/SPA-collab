@@ -15,30 +15,40 @@ async function renderLogin() {
 async function renderDashboard() {
   // render the navbar & app_container
   app.innerHTML = "";
-  navbar_appContainer_Elms()
+  navbar_appContainer_Elms();
   // render the view
-  const app_container = document.getElementById("app_container")
+  const app_container = document.getElementById("app_container");
   app_container.innerHTML = "";
   app_container.appendChild(Dashboard());
   // element definitions & event listeners
   dataUtils();
   dashboardViewUtils();
   await displayDashboard(state.user);
-  headerResizer()
+  headerResizer();
 }
 
 async function renderSingleReq(req_id) {
-  // fetch the request data from db
-  const response = await fetch(`http://localhost:4000/video-request/${req_id}`);
-  const request = await response.json();
-  // render the navbar & app_container
-  app.innerHTML = "";
-  navbar_appContainer_Elms()
-  // render the view
-  const app_container = document.getElementById("app_container")
-  app_container.innerHTML = "";
-  app_container.appendChild(singleReqPage(request));
-  singleReqUtils(request);
+  try {
+    // fetch the request data from db
+    const response = await fetch(`http://localhost:4000/video-request/${req_id}`);
+    if (!response.ok) {
+      throw new Error("request not found");
+    }
+    // if req exists render single request
+      // render the navbar & app_container
+      app.innerHTML = "";
+      navbar_appContainer_Elms();
+      // render the view
+      const app_container = document.getElementById("app_container");
+      app_container.innerHTML = "";
+      const request = await response.json();
+      app_container.appendChild(singleReqPage(request));
+      singleReqUtils(request);
+  } catch (error) {
+    // if req doesn't exist render dashboard
+      await renderDashboard();
+      return;
+  }
 }
 
 export default async function router() {
@@ -46,13 +56,13 @@ export default async function router() {
   if (!state.userId) {
     await renderLogin();
     return;
-  } 
-    // get the path after #
-    const hash = location.hash.slice(1) || "/";
-    // render view
-    if (hash.includes("/req")) {
-      await renderSingleReq(hash.split("/")[2]);
-    } else {
-      await renderDashboard();
-    }
+  }
+  // get the path after #
+  const hash = location.hash.slice(1) || "/";
+  // render view
+  if (hash.includes("/req")) {
+    await renderSingleReq(hash.split("/")[2]);
+  } else {
+    await renderDashboard();
+  }
 }
